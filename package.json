@@ -1,0 +1,47 @@
+{
+  "name": "anqurvanillapy.github.io",
+  "version": "1.0.0",
+  "description": "A blog of @anqurvanillapy",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack",
+    "build": "NODE_ENV=production webpack",
+    "start": "webpack-dev-server",
+    "clean": "rm -rf dist/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anqurvanillapy/anqurvanillapy.github.io.git"
+  },
+  "keywords": [
+    "blog"
+  ],
+  "author": "AnqurVanillapy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anqurvanillapy/anqurvanillapy.github.io/issues"
+  },
+  "homepage": "https://github.com/anqurvanillapy/anqurvanillapy.github.io#readme",
+  "devDependencies": {
+    "autoprefixer": "^7.1.4",
+    "babel-core": "^6.26.0",
+    "babel-env": "^2.4.1",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babelify": "^7.3.0",
+    "css-loader": "^0.28.7",
+    "extract-text-webpack-plugin": "^3.0.0",
+    "http-server": "^0.10.0",
+    "postcss-loader": "^2.0.6",
+    "source-map-loader": "^0.2.1",
+    "style-loader": "^0.18.2",
+    "uglify-js": "^3.1.0",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.8.2"
+  },
+  "dependencies": {
+    "highlight.js": "^9.12.0",
+    "marked": "^0.3.6"
+  }
+}
