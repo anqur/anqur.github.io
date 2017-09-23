@@ -4,7 +4,7 @@
 [Learning Concurrent Programming in Scala](https://www.packtpub.com/application-development/learning-concurrent-programming-scala)
 这本书, 起因虽然不是对 Scala 有着强烈的好奇心, 而是因为 Scala
 标准库和社区中有着大量优秀的, production-ready 的并发编程工具和实践, 譬如
-Future 和 Promise 这样的跨线程的延时/同步结构, 还有 STM (软件事物内存), Actor
+Future 和 Promise 这样的跨线程的延时/同步结构, 还有 STM (软件事务内存), Actor
 这样的利器, 当然由于依赖 JVM, 原子变量等特性也可以轻松使用 (有种在讨论 Clojure
 的错觉).  但是 Scala 本身的 `Option` 类型/模式匹配, *by-name parameters*
 这样的特性简直让人有种在写 Rust 的快感, 所以为了学习高级并发结构和工具来学习
