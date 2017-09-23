@@ -4,7 +4,7 @@
 [Learning Concurrenty Programming in Scala](https://www.packtpub.com/application-development/learning-concurrent-programming-scala)
 这本书, 起因虽然不是对 Scala 有着强烈的好奇心, 而是因为 Scala
 标准库和社区中有着大量优秀的, production-ready 的并发编程工具和实践, 譬如
-`Future` 和 `Promise` 这样的跨线程的延时/同步结构, 还有 `STM ` (软件事物内存),
+`Future` 和 `Promise` 这样的跨线程的延时/同步结构, 还有 `STM ` (软件事务内存),
 `Actor` 这样的利器, 当然由于依赖 JVM, 原子变量等特性也可以轻松使用 (有种在讨论
 Clojure 的错觉).  但是 Scala 本身的 `Option` 类型/模式匹配, *by-name parameters*
 这样的特性简直让人有种在写 Rust 的快感, 所以为了学习高级并发结构和工具来学习
@@ -192,8 +192,8 @@ main(int argc, const char *argv[])
     w.push_back([&] { std::cout << "have\n"; });
     w.push_back([&] { std::cout << "fun\n"; });
 
-    // 等待线程结束.
-    t1.join();
+    // worker 线程独立运行, 主线程结束后被回收.
+    t1.detach();
 
     return 0;
 }
@@ -217,16 +217,16 @@ $ top -p `pgrep a.out`
 
 这里有两个可以延伸的点:
 
-* 为什么不使用 `t1.detach()`?  说好的守护进程呢?
+* 为什么这个例子进程直接退出了?  不等待其他任务的插入吗?
 * 可以不使用条件变量使线程睡眠/唤起吗?
 
-关于第一个点, `t1.detach()` 让 worker 线程独立运行后, 我怀疑主线程的结束导致了
-`cv` 变量的析构, 接着导致 worker 线程的结束.
-实际情况中也是当最后两行文字输出完毕后, 进程便立即退出了.
+关于第一个点, `t1.detach()` 让 worker 线程独立运行,
+不过这里需要一个监听新任务产生的一个阻塞调用, 否则主线程结束后, worker
+线程占用的资源就会被回收并退出.
 
-第二个点的话, 我们可以使用 `std::this_thread::yield()` 的接口,
+第二个点的话, 我们可以使用 `std::this_thread::yield` 的接口,
 搭配队列的长度实现睡眠, 队列的长度可以用 `size` 接口用互斥锁跟踪,
 也可以用外部的一个原子变量来优化性能.  轮询的循环可以写成
-`while (t_siz.load() == 0) std::this_thread::yield()` 来使线程挂起.
+`while (t_siz.load() == 0) std::this_thread::yield();` 来使线程挂起.
 但是这样写的坏处便是会消耗过多的 CPU 时间片,
 因为本质上并不是一个订阅/发布的工作方式.
