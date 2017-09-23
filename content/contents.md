@@ -1,5 +1,5 @@
 ```bash
-$  # @anqurvanillapy 的博客.
+$ # @anqurvanillapy 的博客.
 $ daily-routine
                  (__) 
                  (oo) 

@@ -20,6 +20,7 @@ blockquote { font-style: italic; }
 h1 { font-size: larger; }
 h2 { font-size: large; }
 h3 { font-size: medium; }
+p, pre { overflow: overlay; }
 
 header, main, footer {
   width: 90%;
