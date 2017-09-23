@@ -15,12 +15,13 @@ a {
 }
 
 code { font-weight: bold; }
+pre { overflow: overlay; }
 pre > code { font-weight: normal; }
 blockquote { font-style: italic; }
 h1 { font-size: larger; }
 h2 { font-size: large; }
 h3 { font-size: medium; }
-p, pre { overflow: overlay; }
+img { max-width: 100%; }
 
 header, main, footer {
   width: 90%;
