@@ -12,4 +12,4 @@ $ daily-routine
 
 ## 目录
 
-1. [基于 hazard pointer 实现一个无锁 FIFO](/?p=fifo-based-on-hazard-pointer)
+1. [C++11 风格的迷你任务队列](/?p=cpp11-task-queue)

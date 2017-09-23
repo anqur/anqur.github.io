@@ -7,7 +7,7 @@ import 'highlight.js/styles/default.css'
 
 (async () => {
   [
-    'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure'
+    'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure', 'scala'
   ].forEach(lang => {
     const module = require(`highlight.js/lib/languages/${lang}`)
     hljs.registerLanguage(lang, module)
@@ -24,6 +24,7 @@ import 'highlight.js/styles/default.css'
   const lastModified = res.headers.get('last-modified')
   const body = await res.text()
 
+  document.title = title
   document.querySelector('main').insertAdjacentHTML('beforeend', marked(body))
   document.getElementById('last-modified').textContent = lastModified
   document.getElementById('footer-title').textContent = title

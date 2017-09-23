@@ -67,7 +67,7 @@ module.exports = {
     new webpack.ContextReplacementPlugin(
       /highlight\.js\/lib\/languages$/,
       new RegExp(`^./(${[
-        'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure'
+        'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure', 'scala'
       ].join('|')})$`)
     )
   ].concat(IS_DEV ? [] : [
