@@ -1,3 +1,4 @@
+import qs from 'querystring'
 import marked from 'marked'
 import hljs from 'highlight.js/lib/highlight'
 
@@ -18,7 +19,7 @@ import 'highlight.js/styles/default.css'
     }
   })
 
-  const title = window.location.search.slice(1) || 'contents'
+  const title = qs.parse(window.location.search.slice(1)).p || 'contents'
   const res = await window.fetch(`/content/${title}.md`)
 
   if (!res.ok) {
