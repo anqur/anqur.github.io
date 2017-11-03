@@ -6,7 +6,7 @@
 最近看了 jemalloc 的
 [论文](https://people.freebsd.org/~jasone/jemalloc/bsdcan2006/jemalloc.pdf),
 在准备看一些实现的时候, 看到了 `__attribute__((constructor))` 和
-`__attribute((destructor))` 这样的东西, 去查了下 GCC 的文档, 读起来是比较简单.
+`__attribute__((destructor))` 这样的东西, 去查了下 GCC 的文档, 读起来是比较简单.
 
 > The *constructor* attribute causes the function to be called automatically
 before execution enters `main()`. Similarly, the *destructor* attribute causes
@@ -66,7 +66,7 @@ calling conventions 这样的领域, 还有一组专业名词叫 function prolog
 而且一般会很头疼, 比如看到云风老师在博客里描述的一个
 [问题](https://blog.codingnow.com/2017/09/direct3d12_return_struct_calling_convention_bug.html),
 就是结构体在返回给 caller 的时候被 GCC 优化, D3D 的接口在取返回的结构体地址时和
-GCC 不统一, 直接把`this` 指针内容 (虚表) 写坏了.  我还留了个言问是不是 D3D
+GCC 不统一, 直接把 `this` 指针内容 (虚表) 写坏了.  我还留了个言问是不是 D3D
 遵循了 `__vectorcall` 这样的规范, 然而自己没有精读过出错的代码,
 怕是要被老师扁死.  不过如果真是这样的问题, GCC 自己有这样的关键字,
 规避一下优化就好了.
