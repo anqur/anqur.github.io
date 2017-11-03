@@ -24,4 +24,4 @@
 ## `SEE ALSO`
 
 *Horrible RAM* 是 *oroblram* 的谐音, 反过来即是 *Marlboro*, 是对 2011 年电影
-*The Girl with the Dragon Tattoo* 中男主角在遭遇失败后购买的红万香烟.
+*The Girl with the Dragon Tattoo* 中男主角在遭遇失败后购买的红万香烟的致敬.
