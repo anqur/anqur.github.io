@@ -41,10 +41,10 @@ foo()
 
 `Space2Tab` 对此的表现相当的出色, 可以多写点例子测试两下.
 
-出于个人习惯, 我还增加了一个快捷键, 用于在一行代码前增添一个 `// ` 字段,
-其实就是注释, 不过并不能对注释进行 toggle.  这里用到的特性叫做 `<localleader>`,
-十分适合做加注释这样的扩展.  例如, `<localleader>c` 指的是按下 <kbd>&bsol;</kbd>
-和 <kbd>C</kbd> 键这个动作.
+出于个人习惯, 我还增加了一个快捷键, 用于在一行代码前增添/删除一个 `// ` 字段,
+其实就是注释的 toggle.  这里用到的特性叫做 `<localleader>`,
+十分适合做个人偏好的快捷键扩展.  例如, `<localleader>c` 指的是按下
+<kbd>&bsol;</kbd> 和 <kbd>C</kbd> 键 (输入小写 c) 这个动作.
 
 这一段的配置长这样.
 
@@ -53,6 +53,7 @@ foo()
 autocmd BufEnter *.c,*.cc,*.h,*.hpp,*.cpp call SetCppOptions()
 function SetCppOptions()
   nnoremap <buffer> <localleader>c I// <esc>
+  nnoremap <buffer> <localleader>C I<esc>xxx
   setlocal cindent
   setlocal cinoptions=(0,u0,U0
 endfunction
