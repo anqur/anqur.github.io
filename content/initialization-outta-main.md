@@ -26,7 +26,7 @@ has been called.
 ```c
 #include <stdio.h>
 
-#define __section__(S) __attribute__ ((section(S)))
+#define SECTION(S) __attribute__ ((section(S)))
 
 void
 ctor()
@@ -40,8 +40,8 @@ dtor()
     printf("after main\n");
 }
 
-void (*pctor)() __section__(".ctors") = ctor;
-void (*pdtor)() __section__(".dtors") = dtor;
+void (*pctor)() SECTION(".ctors") = ctor;
+void (*pdtor)() SECTION(".dtors") = dtor;
 
 int
 main()

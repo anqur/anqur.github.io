@@ -6,6 +6,15 @@ import './style.css'
 import 'highlight.js/styles/default.css'
 
 ;(async () => {
+  // Scroll to top.
+
+  document.getElementById('scroll-to-top').addEventListener('click', () => {
+    window.scrollTo(0, 0)
+    return false
+  })
+
+  // Code highlighting.
+
   ;[
     'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure', 'scala'
   ].forEach(lang => {
@@ -18,6 +27,8 @@ import 'highlight.js/styles/default.css'
       return hljs.highlightAuto(code).value
     }
   })
+
+  // Routes.
 
   const title = qs.parse(window.location.search.slice(1)).p || 'contents'
   const res = await window.fetch(`/content/${title}.md`)
