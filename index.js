@@ -8,10 +8,10 @@ import 'highlight.js/styles/default.css'
 ;(async () => {
   // Scroll to top.
 
-  document.getElementById('scroll-to-top').addEventListener('click', () => {
+  document.getElementById('scroll-to-top').onclick = () => {
     window.scrollTo(0, 0)
     return false
-  })
+  }
 
   // Code highlighting.
 
