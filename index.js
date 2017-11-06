@@ -26,7 +26,7 @@ class Spinner {
     this.arr = ['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷']
     this.idx = 0
     this.timer = setInterval(this._update, 75)
-    this.$spinner = document.getElementById('spinner')
+    $loader.insertAdjacentHTML('beforeend', 'Fetching...')
   }
 
   spin = () => {
