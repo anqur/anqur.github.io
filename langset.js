@@ -9,4 +9,4 @@ const langset = [
   'scala'
 ]
 
-export default langset
+module.exports = langset

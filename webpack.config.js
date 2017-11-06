@@ -2,6 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const autoprefixer = require('autoprefixer')
+const langset = require('./langset')
 const ENV = process.env.NODE_ENV || 'development'
 const IS_DEV = ENV === 'development'
 
@@ -66,9 +67,7 @@ module.exports = {
     }),
     new webpack.ContextReplacementPlugin(
       /highlight\.js\/lib\/languages$/,
-      new RegExp(`^./(${[
-        'javascript', 'python', 'bash', 'cpp', 'java', 'go', 'clojure', 'scala'
-      ].join('|')})$`)
+      new RegExp(`^./(${langset.join('|')})$`)
     )
   ].concat(IS_DEV ? [] : [
     new webpack.optimize.UglifyJsPlugin({
