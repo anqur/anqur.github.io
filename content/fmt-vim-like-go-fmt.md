@@ -53,7 +53,7 @@ foo()
 autocmd BufEnter *.c,*.cc,*.h,*.hpp,*.cpp call SetCppOptions()
 function SetCppOptions()
   nnoremap <buffer> <localleader>c I// <esc>
-  nnoremap <buffer> <localleader>C I<esc>xxx
+  nnoremap <buffer> <localleader>C ^xxx
   setlocal cindent
   setlocal cinoptions=(0,u0,U0
 endfunction
