@@ -2,6 +2,7 @@ import qs from 'querystring'
 import marked from 'marked'
 import hljs from 'highlight.js/lib/highlight'
 
+import { fetch } from './lib'
 import langset from './langset'
 
 import './style.css'
@@ -46,7 +47,6 @@ class Spinner {
   }
 }
 
-
 const render = (title, body, mod) => {
   document.title = title
   document.querySelector('main').insertAdjacentHTML('beforeend', marked(body))
@@ -66,7 +66,7 @@ const render = (title, body, mod) => {
   marked.setOptions({ highlight: code => hljs.highlightAuto(code).value })
 
   const title = qs.parse(window.location.search.slice(1)).p || 'contents'
-  const res = await window.fetch(`/content/${title}.md`)
+  const res = await fetch(`/content/${title}.md`)
   spinner.destroy()
   if (res.ok) {
     const lastModified = res.headers.get('last-modified')
