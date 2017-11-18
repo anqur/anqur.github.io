@@ -1,30 +1,32 @@
 const XHR = window.XMLHttpRequest
-const xhr = new XHR()
+const _xhr = new XHR()
+
+class _Header {
+  get = key => _xhr.getResponseHeader(key)
+}
 
 class _Response {
-  constructor () {
-    this.headers = {
-      get: this._getResHeader
-    }
+  get ok () {
+    return _xhr.status === 200
   }
 
-  ok = xhr.status === 200
+  get headers () {
+    return new _Header()
+  }
 
   text = () => new Promise((resolve, reject) => {
-    resolve(xhr.responseText)
+    resolve(_xhr.responseText)
   })
-
-  _getResHeader = key => xhr.getResponseHeader(key)
 }
 
 const fetch = url => new Promise((resolve, reject) => {
-  xhr.open('GET', url, true)
-  xhr.send()
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === XHR.DONE && xhr.status === 200) {
+  _xhr.open('GET', url, true)
+  _xhr.send()
+  _xhr.onreadystatechange = () => {
+    if (_xhr.readyState === XHR.DONE && _xhr.status === 200) {
       resolve(new _Response())
     } else {
-      if (xhr.status !== 200) reject(new Error('fetch not ok'))
+      if (_xhr.status !== 200) reject(new Error('fetch not ok'))
     }
   }
 })
