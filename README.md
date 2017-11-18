@@ -2,12 +2,6 @@
 
 A blog of `@anqurvanillapy`.
 
-## Topics
-
-- Networking
-- Compiler
-- Logic
-
 ## Development
 
 Clone and `npm i`

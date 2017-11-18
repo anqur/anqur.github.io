@@ -48,7 +48,7 @@ class Spinner {
 }
 
 const render = (title, body, mod) => {
-  document.title = title
+  document.title = `cd ~/${title === 'contents' ? '' : title}`
   document.querySelector('main').insertAdjacentHTML('beforeend', marked(body))
   $lastModified.textContent = mod
   $footerTitle.textContent = title
