@@ -34,7 +34,7 @@ class Spinner {
     $spinner.textContent = this.arr[this.idx]
   }
 
-  destroy = () => {
+  remove = () => {
     clearInterval(this.timer)
     $loader.remove()
   }
@@ -67,12 +67,12 @@ const render = (title, body, mod) => {
 
   const title = qs.parse(window.location.search.slice(1)).p || 'contents'
   const res = await fetch(`/content/${title}.md`)
-  spinner.destroy()
+  spinner.remove()
   if (res.ok) {
     const lastModified = res.headers.get('last-modified')
     const body = await res.text()
     render(title, body, lastModified)
   } else {
-    render('Error', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
+    render('err', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
   }
 })()
