@@ -76,7 +76,7 @@ func BenchmarkChanChan(b *testing.B) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < NUM; i++ {
-			// Reponse 通道.
+			// Response 通道.
 			res := make(chan Msg)
 			// 发送这个 chan 给服务端返回回应.
 			req <- res
@@ -184,10 +184,12 @@ package main
 import (
 	"fmt"
 	"time"
+
+	"github.com/anqurvanillapy/profut"
 )
 
 func main() {
-	p := &Promise{}
+	p := &profut.Promise{}
 	f := p.GetFuture()
 
 	go func(p *Promise) {
