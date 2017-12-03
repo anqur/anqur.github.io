@@ -16,7 +16,8 @@
 2. [C 中的无限循环](/?p=c-infinite-loop)
 3. [初探进程的动态初始化](/?p=initialization-outta-main)
 4. [Vim 中的制表符缩进与空格对齐](/?p=fmt-vim-like-go-fmt)
-5. [Chan Chan](/?p=chan-chan)
+5. [标记指针](/?p=tagged-pointer)
+6. [Chan Chan](/?p=chan-chan)
 
 ## `BUGS`
 
