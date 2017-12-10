@@ -1,6 +1,7 @@
 const langset = [
   'javascript',
   'python',
+  'lua',
   'bash',
   'cpp',
   'java',
