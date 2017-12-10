@@ -18,6 +18,7 @@
 4. [Vim 中的制表符缩进与空格对齐](/?p=fmt-vim-like-go-fmt)
 5. [标记指针](/?p=tagged-pointer)
 6. [Chan Chan](/?p=chan-chan)
+7. [`maybe<T>` 与调用规范](/?p=maybe-and-calling-conventions)
 
 ## `BUGS`
 
@@ -25,6 +26,8 @@
 [Issues](https://github.com/anqurvanillapy/anqurvanillapy.github.io/issues).
 
 ## `SEE ALSO`
+
+文章遵守 `cc-by-4.0` 协议.
 
 *Horrible RAM* 是 *oroblram* 的谐音, 反过来即是 *Marlboro*, 是对 2011 年电影
 *The Girl with the Dragon Tattoo* 中男主角在遭遇失败后购买的红万香烟的致敬.

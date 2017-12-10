@@ -5,8 +5,10 @@ const langset = [
   'cpp',
   'java',
   'go',
+  'rust',
   'clojure',
-  'scala'
+  'scala',
+  'haskell'
 ]
 
 module.exports = langset
