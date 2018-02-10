@@ -19,6 +19,7 @@
 5. [标记指针](/?p=tagged-pointer)
 6. [Chan Chan](/?p=chan-chan)
 7. [`maybe<T>` 与调用规范](/?p=maybe-and-calling-conventions)
+8. [C++ vs Java?](/?p=cpp-than-java-and-future)
 
 ## `BUGS`
 
