@@ -19,9 +19,14 @@ a {
     font-weight: normal;
   }
 
-code { font-weight: bold; }
-pre { overflow: overlay; }
-pre > code { font-weight: normal; }
+pre {
+  padding-left: 1em;
+  border-left: solid 1px #aaa;
+  overflow: overlay;
+}
+  code { font-weight: bold; }
+  pre > code { font-weight: normal; }
+
 blockquote { font-style: italic; }
 h1 { font-size: larger; }
 h2 { font-size: large; }
