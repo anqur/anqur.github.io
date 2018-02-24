@@ -21,6 +21,7 @@
 7. [`maybe<T>` 与调用规范](/?p=maybe-and-calling-conventions)
 8. [C++ vs Java?](/?p=cpp-than-java-and-future)
 9. [初探 JavaScript 中的 task 和 microtask](/?p=js-task-and-microtask)
+9. [likely 和 unlikely 技巧](/?p=likely-and-unlikely-trick)
 
 ## `BUGS`
 
