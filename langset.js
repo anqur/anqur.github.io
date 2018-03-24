@@ -9,7 +9,8 @@ const langset = [
   'rust',
   'clojure',
   'scala',
-  'haskell'
+  'haskell',
+  'perl'
 ]
 
 module.exports = langset
