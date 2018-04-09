@@ -23,6 +23,7 @@
 9. [初探 JavaScript 中的 task 和 microtask](/?p=js-task-and-microtask)
 10. [likely 和 unlikely 技巧](/?p=likely-and-unlikely-trick)
 11. [Monash: 以 monadic 的姿势写 Shell](/?p=monash)
+12. [在 C++17 中为用户函数提供 purity 检测](/?p=purity-in-cpp17)
 
 ## `BUGS`
 

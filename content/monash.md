@@ -38,7 +38,7 @@ $ ./monash < foo.mnsh
 
 项目地址 [在这](https://github.com/anqurvanillapy/dimsumltd/tree/master/monash),
 使用 Rakudo Perl 6 编写, 包括 `MAIN` 函数本身也不过 120 行代码, 没有三方依赖,
-语言本身有很多很精彩的功能.
+Perl 6 语言本身有很多很精彩的功能.
 
 ## 缘起
 
@@ -88,7 +88,7 @@ sub MAIN($src = (@*ARGS[0] // slurp)) {
 ```
 
 `slurp` 就是常说的接受 `stdin` 输入, 而如果给进程赋予大于 1 数量的参数, 比如
-`$ ./foo 1 2`, 则会输出一下结果:
+`$ ./foo 1 2`, 则会输出以下结果:
 
 ```bash
 Usage:
