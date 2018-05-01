@@ -4,10 +4,10 @@
   "description": "A blog of @anqurvanillapy",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack",
-    "build": "cross-env NODE_ENV=production webpack",
-    "start": "webpack-dev-server",
-    "clean": "rm -rf dist/",
+    "build:dev": "webpack --mode=development",
+    "build": "webpack --mode=production",
+    "start": "webpack-serve --config ./webpack.config.js --open",
+    "clean": "rimraf dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,20 +24,16 @@
   },
   "homepage": "https://github.com/anqurvanillapy/anqurvanillapy.github.io#readme",
   "devDependencies": {
-    "autoprefixer": "^7.1.4",
-    "babel-core": "^6.26.0",
-    "babel-env": "^2.4.1",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "cross-env": "^5.1.1",
-    "css-loader": "^0.28.7",
-    "extract-text-webpack-plugin": "^3.0.0",
-    "postcss-loader": "^2.0.6",
-    "source-map-loader": "^0.2.1",
-    "style-loader": "^0.18.2",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.8.2"
+    "autoprefixer": "^8.4.1",
+    "css-loader": "^0.28.11",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "postcss-loader": "^2.1.4",
+    "rimraf": "^2.6.2",
+    "source-map-loader": "^0.2.3",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.1.2",
+    "webpack-serve": "^0.3.2"
   },
   "dependencies": {
     "highlight.js": "^9.12.0",

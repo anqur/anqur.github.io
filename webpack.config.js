@@ -3,11 +3,11 @@ const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const autoprefixer = require('autoprefixer')
 const langset = require('./langset')
-const ENV = process.env.NODE_ENV || 'development'
-const IS_DEV = ENV === 'development'
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 module.exports = {
   context: __dirname,
+  mode: process.env.NODE_ENV || 'development',
   devtool: IS_DEV ? 'source-map' : false,
   entry: './index.js',
   output: {
@@ -22,11 +22,6 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         loader: 'source-map-loader'
-      },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: 'babel-loader'
       },
       {
         test: /\.css$/,
@@ -56,10 +51,6 @@ module.exports = {
     ]
   },
   plugins: [
-    new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(ENV)
-    }),
     new ExtractTextPlugin({
       filename: 'style.css',
       allChunks: true,
@@ -69,10 +60,5 @@ module.exports = {
       /highlight\.js\/lib\/languages$/,
       new RegExp(`^./(${langset.join('|')})$`)
     )
-  ].concat(IS_DEV ? [] : [
-    new webpack.optimize.UglifyJsPlugin({
-      output: { comments: false },
-      compress: true
-    })
-  ])
+  ]
 }

@@ -2,11 +2,12 @@ import qs from 'querystring'
 import marked from 'marked'
 import hljs from 'highlight.js/lib/highlight'
 
-import { fetch } from './lib'
 import langset from './langset'
 
 import './style.css'
 import 'highlight.js/styles/default.css'
+
+const fetch = window.fetch
 
 const [
   $lastModified,
@@ -30,16 +31,16 @@ class Spinner {
     $loader.insertAdjacentHTML('beforeend', 'Fetching...')
   }
 
-  _spin = () => {
+  _spin () {
     $spinner.textContent = this.arr[this.idx]
   }
 
-  remove = () => {
+  remove () {
     clearInterval(this.timer)
     $loader.remove()
   }
 
-  _update = () => {
+  _update () {
     let idx = this.idx
     idx = idx === this.arr.length - 1 ? 0 : idx + 1
     this.idx = idx
