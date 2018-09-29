@@ -12,7 +12,7 @@ $ cd anqurvanillapy.github.io/
 $ npm i
 ```
 
-`npm start` for starting a dev server, `webpack-dev-server` by default
+`npm start` for starting a dev server, `webpack-serve` by default
 
 ```bash
 $ npm start
