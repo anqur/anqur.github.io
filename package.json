@@ -33,11 +33,11 @@
     "style-loader": "^0.21.0",
     "webpack": "^4.6.0",
     "webpack-cli": "^3.1.1",
-    "webpack-serve": "^0.3.2"
+    "webpack-serve": "^2.0.2"
   },
   "dependencies": {
     "highlight.js": "^9.12.0",
     "marked": "^0.3.9",
-    "mathjax": "^2.7.5"
+    "mathjax3": "^3.0.0-beta.2"
   }
 }

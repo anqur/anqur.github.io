@@ -24,6 +24,7 @@
 10. [likely 和 unlikely 技巧](/?p=likely-and-unlikely-trick)
 11. [Monash: 以 monadic 的姿势写 Shell](/?p=monash)
 12. [在 C++17 中为用户函数提供 purity 检测](/?p=purity-in-cpp17)
+13. [数学符号下的编程谎言 (1) 数据编码](/?p=lies-about-programming-languages-in-mathematical-notations-1)
 
 ## `BUGS`
 

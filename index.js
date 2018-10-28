@@ -1,3 +1,5 @@
+'use strict'
+
 import qs from 'querystring'
 import marked from 'marked'
 import hljs from 'highlight.js/lib/highlight'
@@ -48,12 +50,13 @@ class Spinner {
   }
 }
 
-const render = (title, body, mod) => {
+const render = (title, body, mod) => new Promise(resolve => {
   document.title = `cd ~/${title === 'contents' ? '' : title}`
   document.querySelector('main').insertAdjacentHTML('beforeend', marked(body))
   $lastModified.textContent = mod
   $footerTitle.textContent = title
-}
+  resolve()
+})
 
 ;(async () => {
   const spinner = new Spinner()
@@ -72,8 +75,8 @@ const render = (title, body, mod) => {
   if (res.ok) {
     const lastModified = res.headers.get('last-modified')
     const body = await res.text()
-    render(title, body, lastModified)
+    await render(title, body, lastModified)
   } else {
-    render('err', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
+    await render('err', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
   }
 })()
