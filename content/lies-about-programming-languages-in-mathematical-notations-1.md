@@ -266,7 +266,7 @@ $pair$ 作为节点的列表的定义.
 我们到底应该如何定义它呢?  答案就是整数 $\mathbb{Z}$ 同样也是一个 $pair$,
 它的第一, 二个元素的类型都是自然数 $\mathbb{N}$, 如 $(a, b)$ 就代表着整数
 $a - b$, $(1, 2)$ 就是整数 $-1$, $(6, 7)$ 也同样是 $-1$, 它们的和就是俩元素之和
-$(1 + 6, 2 + 7) = (7, 9) = -2$, 如此神奇, 而减法也就是加上被减数的负数,
+$(1 + 6, 2 + 7) /equiv (7, 9) /equiv -2$ 如此神奇, 而减法也就是加上被减数的负数,
 所以便有如下 operations 定义了
 
 $$
@@ -277,12 +277,14 @@ $$
 
 ## 更多
 
-本文章主要围绕的领域除了 $\lambda$-算子, 后面编码部分其实称作 Church encoding
-(邱奇编码), 主要的贡献者都是数学家 Alonzo Church.  但是在编码过程中, 我们对
-*类型* 这一概念还停留在 *convention* (*思维惯例*) 之上, 并没有给出严谨定义,
-这样我们就不能对运算等 operation 和不同数值之间进行 *type checking* (*类型检查*)
-这类规约了 (比如用布尔值进行整数运算等等, 结果无法预支甚至错误), 下一篇将会讲
-*data type* 有关的知识.
+本文章主要围绕的领域除了 $\lambda$-算子 (严格意义上称作 untyped lambda-calculus,
+即 *无类型* 的 $\lambda$-算子), 后面编码部分其实称作 Church encoding (邱奇编码),
+主要的贡献者都是数学家 Alonzo Church.  但是在编码过程中, 我们对 *类型*
+这一概念还停留在 *convention* (*思维惯例*) 之上, 并没有给出严谨定义.  这样下来,
+我们就不能对运算等 operation 和不同数值之间进行 *type checking* (*类型检查*)
+这类规约了 (比如用布尔值进行整数运算等等, 结果无法预知甚至错误), 下一篇将会讲
+*data type* 有关的知识.  而依靠本篇内容, 读者已经可以自己实现一个无类型的 FP
+编程语言了.
 
 - 延伸阅读
     + [Foundations of Functional Programming Languages (Andrés Sicard-Ramírez) [pdf]](http://www1.eafit.edu.co/asr/courses/foundations-of-functional-programming-languages/ffpl-slides.pdf)
