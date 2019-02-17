@@ -10,6 +10,7 @@ import './style.css'
 import 'highlight.js/styles/default.css'
 
 const fetch = window.fetch
+const MathJax = window.MathJax
 
 const [
   $lastModified,
@@ -60,6 +61,7 @@ const render = (title, body, mod) => new Promise(resolve => {
 
 ;(async () => {
   const spinner = new Spinner()
+
   $scrollToTop.onclick = () => {
     window.scrollTo(0, 0)
     return false
@@ -71,15 +73,18 @@ const render = (title, body, mod) => new Promise(resolve => {
 
   const title = qs.parse(window.location.search.slice(1)).p || 'contents'
   const res = await fetch(`/content/${title}.md`)
+
   spinner.remove()
+
   if (res.ok) {
     const lastModified = res.headers.get('last-modified')
     const body = await res.text()
     await render(title, body, lastModified)
+
+    if (title !== 'contents') {
+      MathJax.Hub.Queue(['Typeset', MathJax.Hub])
+    }
   } else {
     await render('err', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
   }
-
-  // Force a MathJax render.
-  window.location.reload(false)
 })()
