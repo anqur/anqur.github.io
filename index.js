@@ -79,4 +79,7 @@ const render = (title, body, mod) => new Promise(resolve => {
   } else {
     await render('err', '```bash\n$ echo $?\n404 # :(\n```', 'Page Not Found')
   }
+
+  // Force a MathJax render.
+  window.location.reload(false)
 })()
