@@ -125,12 +125,12 @@ $$
 在高中, 我们学习到在 set theory 的论域下, 任何一个自然数 $n \in \mathbb{N}$,
 都是由同一套 *inductive* (*归纳的*) 方法所定义的, 即一个自然数
 
-1. 要么是包含一个空集的集合, 即 $\\{\varnothing\\}$
-2. 要么是与包含一个空集的集合的并集, 即 $\mathbb{N} \cup \\{\varnothing\\}$
+1. 要么是一个空集, 即 $\varnothing$, 记作 $0$
+2. 要么 $n$ 的后继是它与包含本身的集合的并集, 即 $n \cup \\{ n \\}$
 
 则在此定义下, 自然数 $3$ 表示为
 
-$$\\{ \varnothing, \\{ \varnothing, \\{ \varnothing, \\{ \varnothing \\}\\}\\}\\}$$
+$$\\{ \varnothing, \\{ \varnothing \\}, \\{ \varnothing, \\{ \varnothing \\}\\}\\}$$
 
 在 $\lambda$-算子 中, 我们定义自然数的方式也是类似的, 其中的思想不变.  自然数
 $\mathbb{N}$ 在 1889 年才被 Giuseppe Peano 所正式定义, 简单地说即 "自然数是 0
