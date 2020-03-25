@@ -16,7 +16,7 @@
   </header>
 
   <main>
-  <h1 id="likely-与-unlikely-技巧">likely 与 unlikely 技巧</h1>
+    <article><h1 id="likely-与-unlikely-技巧">likely 与 unlikely 技巧</h1>
 <p>在阅读很多大型项目的代码的时候, 很容易看到 <code>likely</code>/<code>unlikely</code> 这样的 macro, 比如在 V8 中对于这两个 macro 的定义是这样的:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">// A macro to provide the compiler with branch prediction information.</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="pp">#if V8_HAS_BUILTIN_EXPECT</span></span>
@@ -153,7 +153,7 @@
 <p>对于 分支/代码逻辑 带来的性能瓶颈而言, 最好的办法当然是检查 code coverage 了, 官方文档在介绍 <code>__builtin_expect</code> 时也推荐使用 <code>-fprofile-arcs -ftest-coverage</code> 的 flag 配合 <code>gcov</code> 工具产生分析报告, 因为程序员对自己在逻辑分支的设计上, 一般很难拿捏准确.</p>
 <p>其次, 在 C++11 及以上标准中, 要考虑到用户对类的 <code>operator bool</code> 的重载, 最好使用 <code>__builtin_expect(static_cast&lt;bool&gt;(cond), 0)</code> 这样的方式进行类型转换, 以准确地调用到用户自定义的真值判断逻辑.</p>
 <p>最后吐槽一句, 编译器是真的很聪明的, 写一个优化后还能看得懂汇编的例子着实不容易 :(.</p>
-
+</article>
   </main>
 
   <footer>

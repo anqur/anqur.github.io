@@ -16,7 +16,7 @@
   </header>
 
   <main>
-  <h1 id="在-c17-中为用户函数提供-purity-检测">在 C++17 中为用户函数提供 purity 检测</h1>
+    <article><h1 id="在-c17-中为用户函数提供-purity-检测">在 C++17 中为用户函数提供 purity 检测</h1>
 <p>这几天一直在自己的毕设方向上往其他地方微微偏离... 之前对 <em>STM</em> (<em>software transactional memory</em>) 的研究很快止了步, 但最近看到了这个 r/haskell 上的 <a href="https://www.reddit.com/r/haskell/comments/175tjj/stm_vs_actors/">讨论</a>, 元老们的观念一直都是 Haskell 中具有 <em>composable</em> 特性的 STM 结构 (其实就是各种 <code>Monad</code>) 对于 <em>Actor</em> 这种模型的构建是非常合适的, 比如 Haskell 三方库 <code>distributed-process</code> 给人带来在写 Erlang 的错觉, 但是 Actor 及其他并发结构 (如 <em>channel</em>-based <em>CSP</em>) 之于 STM 是更高层的概念, 做粒度太细 (<em>fine-grained</em>) 的同步逻辑反而是个 <em>poor model</em>. So sad, 难道我又陷入了 Haskell 圈子的鄙视链?</p>
 <p>Sad 归 sad, <em>鄙视链</em> 这种观念是否是我的先入为主, 当然要靠个人的学习实践去验证. 于是我去尝试阅读了 Haskell 中 STM <code>Monad</code> 的相关 <a href="https://www.microsoft.com/en-us/research/publication/composable-memory-transactions/">论文</a>, 结合帖子中的讨论和论文中的例子, 确实解决了我的一些疑惑.</p>
 <p>帖子中有人强调, 如果实现一些经典的 <em>ITC</em> (<em>inter-thread communication</em>) 模型, 不得不和 <em>locking granularity</em> 与 -- 如果开发者真的愿意折腾 -- 稍微更好管理的 <em>optimistic locking</em> (乐观锁, 如原子变量等) 打交道, 开发维护成本较高. 这样的体验麻烦在哪呢? 论文中的一个例子做了解答:</p>
@@ -241,7 +241,7 @@
 <h3 id="远观其他系统编程语言的-purity">远观其他系统编程语言的 purity</h3>
 <p>关于其他的一些现代系统编程语言, 如 D, Rust 等, 它们也有各自的 purity 检查, 但据了解 Rust 已经移除了 <code>pure</code> 关键字, 并且没有接受相关的 RFC (参考这个 <a href="https://github.com/rust-lang/rfcs/issues/1631">讨论</a>), 而 D 语言中提供了 <em>weakly pure</em> 和 <em>strongly pure</em> 等几种概念, 但是也同样有其不完整性. 为此, 这种足够一个语言社区讨论十年时间的问题, 还得慢慢花时间从代码碎片玩起才了解啦, 先留下坑再说.</p>
 <p>最后, 整个实践加总结花了一个星期, STM 终于可以继续研究下去了, nice.</p>
-
+</article>
   </main>
 
   <footer>
