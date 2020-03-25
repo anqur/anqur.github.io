@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="initial-scale=1">
+  <title>Horrible RAM</title>
+</head>
+
+<body>
+  <header>
+    <a href="/">Horrible RAM</a> It's a header, everyone!
+  </header>
+
+  <main>
+  <h1 id="数学符号下的编程谎言-1-数据编码">数学符号下的编程谎言 (1) 数据编码</h1>
+<h2 id="前言">前言</h2>
+<p>这是关于 <em>type theory</em> (<em>类型论</em>) 系列博文的第一篇, 文章除了包含个人的学习总结, 最主要的目的在于不使用任何编程语言, 加之严格限制相关编程语言特性的提及之下, 使用数学符号为读者构建一个 <em>functional programming language</em> (<em>函数式编程语言</em>) 的认识.</p>
+<p>但是, 我的言语将 <strong>无法保证百分百严谨</strong>, 原因是这样, 大部分人对编程语言 (尤其是 <em>imperative</em>/<em>命令式</em> 语言) 是有一定认识的, 这足够让人产生对 FP 的感性认识, 而当这些感性认识受到学习者自主的实践后 (交流, 总结, 应用等等), 会自然地去搜索 <em>严谨的定义/性质/公理/定理</em>, 以确保自己的认识与它们高度吻合. 而能达到这一步的, 显然 "寻找真理的路上行人寥寥", 而能将抽象的认识扩展到与理论高度吻合状态的人, 已经是学术内的优秀人士了吧. 很显然那份严谨于此处是不必要的, 更何况水平也有限呢. <em>;P</em></p>
+<h2 id="解读标题">解读标题</h2>
+<p>这个系列的标题有两层含义, 一层为 <em>数学</em>, 另一层为 <em>编程谎言</em>.</p>
+<p>在上高中甚至是大学之前, 我们对数学的认识总是对客观事物有着具象的反映, 如对自然数 2, 虽然在思想中能做到 <em>parametric</em> (<em>参数化的</em>), 即在大脑中我们仿佛有着一个变量, 它可以替换成 <em>手指</em>, <em>苹果</em>, <em>人</em>... 种种事物 (两根手指, 两个苹果, 两个人...), 虽然我们貌似知道实数是什么, 但是仔细一想, 好像总觉得实数只是数轴上的一个点. 而到了 高中/大学, 我们开始接触 <em>set theory</em> (<em>集合论</em>), 接触各种生涩的定义, 却不知这些定义存在的意义. 而 <em>数学</em> 在这一层的含义, 我想说每个人都经历着这个过渡, 它也需要和你一起成长, 它并不是一种负担, 它反映出人的智慧的精妙.</p>
+<p><em>编程谎言</em> 是对 <em>编程语言</em> 的戏称, 是对计算机科学家 Neelakantan Krishnaswami 的致敬. 他在教书的过程中, 认为传授知识是一种 "说谎" 的过程, 这么说是这是因为, 等到学生对所学知识感到满意时, 总能找到一种方法让学生意识到他们再一次被欺骗了 -- 知识总是会更新的. 就像臭名昭著的 <em>"所有的自然数之和为 <span class="math inline">\(-\frac{1}{12}\)</span>"</em> 一样, 当论域不同, 我们再一次受到真理的欺骗.</p>
+<p>而接下来, 我们就用看似生涩却熟悉的符号去构造一些谎言吧!</p>
+<h2 id="lambda-算子"><span class="math inline">\(\lambda\)</span>-算子</h2>
+<p>早在上世纪 30 年代, 理论上早已出现了许多种不能跑在当下计算机中的 "编程语言", 甚至编程语言这个概念还尚未成熟, 当时人们主要研究 <em>formal system</em> (<em>形式系统</em>) 这一领域. 而这其中最为突出的成果为图灵的导师 Alonzo Church 的 <span class="math inline">\(\lambda\)</span>-算子, 它是 FP 中非常重要的理论基石, 之后的文章也都全部围绕这一系统进行讨论.</p>
+<p>在讨论 <span class="math inline">\(\lambda\)</span> 表达式之前, 我们需要一个 <em>context</em> (<em>上下文</em>), 它类似于我们所说的集合论中的 <em>universe</em> 集合 (<em>全集</em>) <span class="math inline">\(U\)</span>, 它保证了我们的论域中拥有独一无二的元素, 写作 <span class="math inline">\(\Gamma\)</span>. <span class="math inline">\(\Gamma\)</span> 可以是一个空集 <span class="math inline">\(\varnothing\)</span>, 也可以是引入了某元素后的集合, 以此类推. 类比一般的高级编程语言, 它就像符号表, 像一个装有独特变量的相关信息的 <em>哈希表</em>, 甚至也可以是放有变量名的 (数据结构里的) <em>集合</em>, 当然这些只是比喻.</p>
+<p>我们定义一个 <span class="math inline">\(\lambda\)</span> 函数, 在 <span class="math inline">\(\Gamma\)</span> 下引入, 形为</p>
+<p><span class="math display">\[\Gamma \vdash \lambda x . x\]</span></p>
+<p>它类似数学中常用的函数 <span class="math inline">\(f(x) = x\)</span>, 但这种表示引入了函数名称 <span class="math inline">\(f\)</span>, 而 <span class="math inline">\(\lambda\)</span> 函数是 <em>匿名</em> 的, 两者显然并不等同. 这种最基本的 <em>输入即输出</em> 的函数, 被称作 <em>identity function</em>.</p>
+<p>和数学中常用的函数表示更加不同的是, 一个 <span class="math inline">\(\lambda\)</span> 函数可以返回另一个 <span class="math inline">\(\lambda\)</span> 函数, 而且对上一个函数的参数是可见的, 即以下函数表示是合法的</p>
+<p><span class="math display">\[\lambda x . \lambda y . x\]</span></p>
+<p>简记为</p>
+<p><span class="math display">\[\lambda x y . x\]</span></p>
+<p>这一种特性叫做 <em>lexical scoping</em>. 有了这一种特性, 我们便可以做到多参数输入, 单结果输出了. 那具体是怎么做的呢? 首先我们先看一个简单的场景</p>
+<p><span class="math display">\[\Gamma \vdash (\lambda x . x)  (\lambda y . y)\]</span></p>
+<p>这句话的意思是, 给定一个 context 叫 <span class="math inline">\(\Gamma\)</span>, 我们将两个 <span class="math inline">\(\lambda\)</span> 函数添加到 <span class="math inline">\(\Gamma\)</span> 之中. 接着我们用第一个函数的参数 <span class="math inline">\(x\)</span> 代替第二个函数的整体, 按照第一个函数的 "执行规则", 返回一个新的 <em>term</em> (<em>项</em>), 即</p>
+<p><span class="math display">\[(\lambda x . x)  (\lambda y . y) = _\beta \lambda y . y\]</span></p>
+<p>这一句话的 "执行结果", 即第二个函数本身. 前面将函数加入到 context 中的过程, 我们简称 <em>eval</em> (即 <em>evaluate</em>), 而实际执行这些函数的过程, 简称 <em>apply</em>, 而之前所提到的 "执行规则", 称作 <em><span class="math inline">\(\beta\)</span>-reduction</em>, 它属于一种 <em>term rewriting rules</em> (<em>项的重写规则</em>). 可见, 在 <span class="math inline">\(\lambda\)</span>-算子 这个系统中, 最基本的操作即 eval/apply 两个过程的循环.</p>
+<p>至于刚刚提到的 <em>多参数输入, 单结果输出</em>, 考虑以下的例子</p>
+<p><span class="math display">\[\Gamma \vdash (\lambda xy.x)  (\lambda a.a) (\lambda b.b)\]</span></p>
+<p>其 apply 的过程即</p>
+<p><span class="math display">\[
+(\lambda xy.x)  (\lambda a.a) (\lambda b.b)
+\equiv (\lambda x.\lambda y.x)  (\lambda a.a) (\lambda b.b) \\\\
+= _\beta (\lambda y.(\lambda a.a)) (\lambda b.b) \\\\
+= _\beta \lambda a.a
+\]</span></p>
+<p>这么一个过程. 要注意的是, 在习惯中, 项的 apply 是 <strong>left recursive</strong> (<strong>左递归</strong>) 的, 即 <span class="math inline">\(a b c\)</span> 是 <span class="math inline">\(((a b) c)\)</span> 的习惯表达, <strong>而不是</strong> 右递归的 <span class="math inline">\((a (b c))\)</span>.</p>
+<p>有 <span class="math inline">\(\beta\)</span>-reduction 的规则, 是否还存在 <em><span class="math inline">\(\alpha\)</span>-X</em> 这样的规则呢? 这里补充下, 这套系统中还存在有 <em><span class="math inline">\(\alpha\)</span>-conversion</em> 的规则, 在形如</p>
+<p><span class="math display">\[\Gamma \vdash (\lambda x . x)  (\lambda x . x)\]</span></p>
+<p>的情况下, 这两个项在 <span class="math inline">\(\Gamma\)</span> 中是独一无二的, 但是为了区分二者, 我们可以用如 <span class="math inline">\(y\)</span> 等其他符号替代, 这一种 <em>conversion</em> (<em>转换</em>) 即称为 <span class="math inline">\(\alpha\)</span>-conversion, 转换的过程为</p>
+<p><span class="math display">\[
+(\lambda x . x)  (\lambda x . x) \\\\
+= _\alpha (\lambda x . x)  (\lambda y . y)
+\]</span></p>
+<h2 id="数据编码">数据编码</h2>
+<p>有了 <span class="math inline">\(\lambda\)</span>-算子 后, 一个近乎完整的编程语言就可以定义了! 要定义一门编程语言, 首先我们要对数据进行编码.</p>
+<h3 id="自然数-mathbbn">自然数 <span class="math inline">\(\mathbb{N}\)</span></h3>
+<p>在高中, 我们学习到在 set theory 的论域下, 任何一个自然数 <span class="math inline">\(n \in \mathbb{N}\)</span>, 都是由同一套 <em>inductive</em> (<em>归纳的</em>) 方法所定义的, 即一个自然数</p>
+<ol type="1">
+<li>要么是一个空集, 即 <span class="math inline">\(\varnothing\)</span>, 记作 <span class="math inline">\(0\)</span></li>
+<li>要么 <span class="math inline">\(n\)</span> 的后继是它与包含本身的集合的并集, 即 <span class="math inline">\(n \cup \\{ n \\}\)</span></li>
+</ol>
+<p>则在此定义下, 自然数 <span class="math inline">\(3\)</span> 表示为</p>
+<p><span class="math display">\[\\{ \varnothing, \\{ \varnothing \\}, \\{ \varnothing, \\{ \varnothing \\}\\}\\}\]</span></p>
+<p>在 <span class="math inline">\(\lambda\)</span>-算子 中, 我们定义自然数的方式也是类似的, 其中的思想不变. 自然数 <span class="math inline">\(\mathbb{N}\)</span> 在 1889 年才被 Giuseppe Peano 所正式定义, 简单地说即 "自然数是 0 和它的 <em>successor</em> (<em>后继</em>) 所归纳构成的", 这是 <em>Peano axioms</em> (<em>皮亚诺公理</em>) 中最为重要的内容, 例如, 自然数 <span class="math inline">\(3\)</span> 可归纳表示为 "<span class="math inline">\(0\)</span> 的后继的后继的后继", 如用 <span class="math inline">\(\lambda\)</span> 函数表示, 设后继操作 <span class="math inline">\(succ\)</span> 表示为 <span class="math inline">\(f\)</span>, 自然数 <span class="math inline">\(0\)</span> 表示为 <span class="math inline">\(x\)</span>, 即</p>
+<p><span class="math display">\[\lambda f x . f (f (f x))\]</span></p>
+<p>这一种数据 <em>encoding</em> (<em>编码</em>) 方法定义出来的数字, 又称作 <em>Church numerals</em> (没错, 是 Alonzo Church 的 Church). 在此基础上, 我们便可以定义该数据类型上的 <em>operations</em> 了, 如 <em>addition</em> (<em>加法</em>)</p>
+<p><span class="math display">\[add \equiv \lambda m n f x . m f (n f x)\]</span></p>
+<p>如 <span class="math inline">\(1 + 1\)</span> 的计算过程</p>
+<p><span class="math display">\[
+(\lambda m n f x . m f (n f x)) (\lambda s z . s z) (\lambda s&#39; z&#39; . s&#39; z&#39;) \\\\
+= _\beta (\lambda n f x . (\lambda s z . s z) f (n f x)) (\lambda s&#39; z&#39; . s&#39; z&#39;) \\\\
+= _\beta \lambda f x . (\lambda s z . s z) f ((\lambda s&#39; z&#39; . s&#39; z&#39;) f x) \\\\
+= _\beta \lambda f x . (\lambda s z . s z) f (f x) \\\\
+= _\beta \lambda f x . f (f x) \equiv 2
+\]</span></p>
+<p>也许你仍觉得加法的定义比较晦涩, 那么大可这么理解, 加法是将 <span class="math inline">\(x\)</span> 进行 <span class="math inline">\(n\)</span> 次 <span class="math inline">\(f\)</span> 执行, 再将结果进行 <span class="math inline">\(m\)</span> 次 <span class="math inline">\(f\)</span> 执行的一个过程. 那么 <span class="math inline">\(x\)</span> 总共就被 <span class="math inline">\(f\)</span> 执行了 <span class="math inline">\(m + n\)</span> 次, 而 <span class="math inline">\(m\)</span> 与 <span class="math inline">\(n\)</span> 恰好就是加法定义中的形式参数.</p>
+<p>有了加法, 自然就有了 <em>multiplication</em> (<em>乘法</em>)</p>
+<p><span class="math display">\[mul \equiv \lambda m n f x . m (n f) x\]</span></p>
+<p>注意到 <span class="math inline">\(m\)</span> 将 <span class="math inline">\((n f)\)</span> 展开了 <span class="math inline">\(m\)</span> 次, 每一个被展开的项中 <span class="math inline">\(n\)</span> 再将 <span class="math inline">\(f\)</span> 展开了 <span class="math inline">\(n\)</span> 次, 这就实现了 <span class="math inline">\(f\)</span> 的 <span class="math inline">\(m \times n\)</span> 次展开. 其他的操作, 如后继操作 <span class="math inline">\(succ\)</span> (即 <span class="math inline">\(1 + n\)</span>), 前驱操作 <span class="math inline">\(pred\)</span> (这一操作的定义比较复杂 <a href="https://en.wikipedia.org/wiki/Church_encoding#Table_of_functions_on_Church_numerals">†</a>), 减法操作 <span class="math inline">\(monus\)</span> (由于没有负数的概念, <span class="math inline">\(0 - 1 \equiv 0\)</span> 是成立的, 因此此操作也并不叫 <span class="math inline">\(minus\)</span>) 都可以相继定义.</p>
+<h3 id="布尔代数-boolean">布尔代数 <span class="math inline">\(boolean\)</span></h3>
+<p>除了自然数, 我们还可以定义 <em>boolean algebra</em> (布尔代数), 如 <span class="math inline">\(true\)</span> 和 <span class="math inline">\(false\)</span> 可定义为</p>
+<p><span class="math display">\[
+true \equiv \lambda x y . x \\\\
+false \equiv \lambda x y . y
+\]</span></p>
+<p>为什么返回第一个参数的函数要被定义为 <em>真</em> 呢? 这其实来自于我们天然的说话习惯, 即 <em>if <span class="math inline">\(p\)</span> then <span class="math inline">\(x\)</span> else <span class="math inline">\(y\)</span></em> (<em>如果 <span class="math inline">\(p\)</span> 那么 <span class="math inline">\(x\)</span> 否则 <span class="math inline">\(y\)</span></em>), 假设 <span class="math inline">\(p\)</span> 在此成立 (为 <em>真</em>), 那么 <span class="math inline">\(x\)</span> "这句话" 是肯定的, 否则 <span class="math inline">\(y\)</span> 是肯定的. 顺便说, 刚刚提到的 "这句话" 的说法, 在数学逻辑中称为 <em>proposition</em> (<em>命题</em>). 这种说话方式的存在, 要求了 <span class="math inline">\(true\)</span> 函数保证 <span class="math inline">\(x\)</span> 的返回, <span class="math inline">\(false\)</span> 保证 <span class="math inline">\(y\)</span> 的返回, 便自然如此定义了.</p>
+<p>刚提到的语言习惯, 我们可以定义成布尔代数的一种 <em>selector</em> (<em>选择器</em>), 即</p>
+<p><span class="math display">\[
+if-then-else \equiv \lambda p x y . p x y \equiv id(p, x, y)
+\]</span></p>
+<p>没错, 它只是 <span class="math inline">\(p, x, y\)</span> 的 identity function. 例如对一次执行过程进行分支选择, 当判断条件为 <span class="math inline">\(true\)</span> 时即有</p>
+<p><span class="math display">\[
+if\ true\ then\ x\ else\ y \\\\
+\equiv (\lambda p x y . p x y)\ true\ x\ y \\\\
+= _\beta x
+\]</span></p>
+<p>有了 <span class="math inline">\(if-then-else\)</span> 之后, <span class="math inline">\(and\)</span>/<span class="math inline">\(or\)</span>/<span class="math inline">\(not\)</span> 这些 operations 的定义也不难了</p>
+<p><span class="math display">\[
+and \equiv \lambda p q . if\ p\ then\ q\ else\ false \\\\
+or \equiv \lambda p q . if\ p\ then\ true\ else\ q \\\\
+not \equiv \lambda p a b . p b a
+\]</span></p>
+<h3 id="整数-mathbbz">整数 <span class="math inline">\(\mathbb{Z}\)</span></h3>
+<p>联系上文, 有了无符号的自然数, 如何定义有符号的整数呢? 这里需要一些先验的知识, 当时将这个问题抛给自己的时候并没能想出来... 就是因为整数的定义比较跳跃, 就像在证明一个定理之前, 总是或多或少会有一些 <em>lemma</em> (<em>引理</em>).</p>
+<h3 id="有序对-pair">有序对 <span class="math inline">\(pair\)</span></h3>
+<p>没错, <em>(ordered) pair</em> (<em>有序对</em>) 就是上一个问题的 "引理", 它形如 <span class="math inline">\((1, 2)\)</span>, 像是一个只能存放两个元素的 <em>list</em> (<em>列表</em>), 而且元素间存在顺序关系. 一个有序对 <span class="math inline">\(pair\)</span> 的 <em>constructor</em> (<em>构造器</em>) 长这样</p>
+<p><span class="math display">\[pair\ x\ y \equiv \lambda x y f . f x y\]</span></p>
+<p>即它将两个元素 <span class="math inline">\(x\)</span> 和 <span class="math inline">\(y\)</span> 封装在一个形如 <span class="math inline">\(\lambda f . f x y\)</span> 的函数中, 供用户传入这个有序对的 operations. 它的两个基本 operations 为</p>
+<p><span class="math display">\[
+fst \equiv true \\\\
+snd \equiv false
+\]</span></p>
+<p><span class="math inline">\(fst\)</span> (<em>first</em>) 即取出第一个元素, <span class="math inline">\(snd\)</span> (<em>second</em>) 取出第二个.</p>
+<h3 id="列表-list">列表 <span class="math inline">\(list\)</span></h3>
+<p>有了有序对后, 就可以定义列表 <span class="math inline">\(list\)</span> 了, 这也是为什么许多 Lisp 方言中的 list 本身也是一个有序对的原因: 归纳定义数据类型带来的极大便捷性. 我们定义 <span class="math inline">\(list\)</span> 的节点是一个有序对, 并有相应的 operations 来支持列表的基本操作</p>
+<p><span class="math display">\[
+nil \equiv false \\\\
+cons \equiv pair \\\\
+head \equiv fst
+\]</span></p>
+<p>如一个列表 <span class="math inline">\((1,\ 2,\ 3)\)</span> 可以这样构造</p>
+<p><span class="math display">\[
+cons\ 1\ (cons\ 2\ (cons\ 3\ nil))
+\]</span></p>
+<p>实质上就是这样一个有序对</p>
+<p><span class="math display">\[
+(1,\ (2,\ (3,\ nil)))
+\]</span></p>
+<p>不过, <span class="math inline">\(list\)</span> 不只有这一种定义的方法, 这里为了简化 <span class="math inline">\(list\)</span> 的概念, 使用了一个 <span class="math inline">\(pair\)</span> 作为节点的列表的定义.</p>
+<h3 id="整数-mathbbz-again">整数 <span class="math inline">\(\mathbb{Z}\)</span>, again</h3>
+<p>截止到这, 简单数据类型的编码在思想上应该跨度不大, 难度适中, 而重新回顾一下整数, 我们到底应该如何定义它呢? 答案就是整数 <span class="math inline">\(\mathbb{Z}\)</span> 同样也是一个 <span class="math inline">\(pair\)</span>, 它的第一, 二个元素的类型都是自然数 <span class="math inline">\(\mathbb{N}\)</span>, 如 <span class="math inline">\((a, b)\)</span> 就代表着整数 <span class="math inline">\(a - b\)</span>, <span class="math inline">\((1, 2)\)</span> 就是整数 <span class="math inline">\(-1\)</span>, <span class="math inline">\((6, 7)\)</span> 也同样是 <span class="math inline">\(-1\)</span>, 它们的和就是俩元素之和 <span class="math inline">\((1 + 6, 2 + 7) \equiv (7, 9) \equiv -2\)</span> 如此神奇, 而减法也就是加上被减数的负数, 所以便有如下 operations 定义了</p>
+<p><span class="math display">\[
+negZ \equiv \lambda n . pair\ (snd\ n) (fst\ n) \\\\
+addZ \equiv \lambda m n . pair\ (add\ (fst\ m) (fst\ n)) (add\ (snd\ m) (snd\ n)) \\\\
+subZ \equiv \lambda m n . addZ\ m (negZ\ n)
+\]</span></p>
+<h2 id="更多">更多</h2>
+<p>本文章主要围绕的领域除了 <span class="math inline">\(\lambda\)</span>-算子 (严格上称作 <em>untyped lambda-calculus</em>, 即 <em>无类型</em> 的 <span class="math inline">\(\lambda\)</span>-算子), 后面编码部分其实称作 Church encoding (邱奇编码), 主要的贡献者都是数学家 Alonzo Church. 但是在编码过程中, 我们对 <em>类型</em> 这一概念还停留在 <em>convention</em> (<em>思维惯例</em>) 之上, 并没有给出严谨定义. 这样下来, 我们就不能对运算等 operation 和不同数值之间进行 <em>type checking</em> (<em>类型检查</em>) 这类规约了 (比如用布尔值进行整数运算等等, 结果无法预知甚至错误), 下一篇将会讲 <em>data type</em> 有关的知识. 而依靠本篇内容, 读者已经可以自己实现一个无类型的 FP 编程语言了.</p>
+<ul>
+<li>延伸阅读
+<ul>
+<li><a href="http://www1.eafit.edu.co/asr/courses/foundations-of-functional-programming-languages/ffpl-slides.pdf">Foundations of Functional Programming Languages (Andrés Sicard-Ramírez) [pdf]</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Church_encoding">Church encoding</a></li>
+<li><a href="https://en.wikipedia.org/wiki/ISWIM">ISWIM</a>, <span class="math inline">\(\lambda\)</span>-算子 作为编程语言</li>
+</ul></li>
+</ul>
+
+  </main>
+
+  <footer>
+    It's footer, everyone!
+  </footer>
+
+  <script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+</body>
+
+</html>
