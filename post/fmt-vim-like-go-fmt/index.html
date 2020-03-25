@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="initial-scale=1">
+
   <title>Horrible RAM</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
@@ -25,12 +27,12 @@ command! -range=% -nargs=0 Space2Tab execute
 <p>接下来, 就是使用 <code>autocmd</code> 监听相关事件来执行它了. vim-go 插件是在缓冲区保存时帮助用户执行 <code>go fmt</code> 统一代码风格, 所以大可模仿这样的机制, 监听 <code>BufWritePre</code> 事件. 这里我只监听了我常用的 C/C++ 的后缀名.</p>
 <pre><code>autocmd BufWritePre *.c,*.cc,*.h,*.hpp,*.cpp Space2Tab</code></pre>
 <p>除此之外, 还可以设置 <code>cindent</code> 来使类似函数参数换行这样的情况也能优雅地对齐, 比如这样的代码:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">void</span></a>
-<a class="sourceLine" id="cb3-2" title="2">foo()</a>
-<a class="sourceLine" id="cb3-3" title="3">{</a>
-<a class="sourceLine" id="cb3-4" title="4">    bar(<span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb3-5" title="5">        <span class="dv">2</span>); <span class="co">// 像这样的对齐</span></a>
-<a class="sourceLine" id="cb3-6" title="6">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1"></a><span class="dt">void</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>foo()</span>
+<span id="cb3-3"><a href="#cb3-3"></a>{</span>
+<span id="cb3-4"><a href="#cb3-4"></a>    bar(<span class="dv">1</span>,</span>
+<span id="cb3-5"><a href="#cb3-5"></a>        <span class="dv">2</span>); <span class="co">// 像这样的对齐</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>}</span></code></pre></div>
 <p><code>Space2Tab</code> 对此的表现相当的出色, 可以多写点例子测试两下.</p>
 <p>出于个人习惯, 我还增加了一个快捷键, 用于在一行代码前增添/删除一个 <code>//</code> 字段, 其实就是注释的 toggle. 这里用到的特性叫做 <code>&lt;localleader&gt;</code>, 十分适合做个人偏好的快捷键扩展. 例如, <code>&lt;localleader&gt;c</code> 指的是按下 <kbd>\</kbd> 和 <kbd>C</kbd> 键 (输入小写 c) 这个动作.</p>
 <p>这一段的配置长这样.</p>
@@ -50,7 +52,10 @@ endfunction</code></pre>
     END
   </footer>
 
-  <script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  <script
+    type="text/javascript"
+    async
+    src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 </body>
 

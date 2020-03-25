@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="initial-scale=1">
+
   <title>Horrible RAM</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
@@ -21,31 +23,31 @@
 <p>The <em>constructor</em> attribute causes the function to be called automatically before execution enters <code>main()</code>. Similarly, the <em>destructor</em> attribute causes the function to be called automatically after <code>main()</code> has completed or <code>exit()</code> has been called.</p>
 </blockquote>
 <p>但是一往网上一查, 发现这样的特性如果考虑不当, 还是容易被编译器轻松地 <em>作弊</em>. 在 ELF 格式的可执行文件里, 管理非主函数初始化和反初始化逻辑的 section 有 <code>.init</code>, <code>.fini</code>, <code>.ctors</code>, <code>.dtors</code>, 前两个是有历史的东西, 后两个需要架构的支持, 但是现代计算机的架构应该是没有问题的, 而这不意味着 <code>.init</code> 和 <code>.fini</code> 是 deprecated 的, 他们执行的顺序是 <code>.init -&gt; .ctors -&gt; .main -&gt; .dtors -&gt; .fini</code>, 并且在编译前提供 <code>-init</code> 和 <code>-fini</code> 这样的 linker flags 即可, 但是组织代码的难度就有区别了, 前两个容易写成碎片化的 <code>.so</code> 对象, 而后俩则是在编译后维护了一张映射到函数的表, 由系统循环地执行, 我们可以写一个 C 的测试代码看看.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
-<a class="sourceLine" id="cb1-2" title="2"></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="pp">#define SECTION(S) __attribute__ ((section(S)))</span></a>
-<a class="sourceLine" id="cb1-4" title="4"></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="dt">void</span></a>
-<a class="sourceLine" id="cb1-6" title="6">ctor()</a>
-<a class="sourceLine" id="cb1-7" title="7">{</a>
-<a class="sourceLine" id="cb1-8" title="8">    printf(<span class="st">&quot;before main</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
-<a class="sourceLine" id="cb1-9" title="9">}</a>
-<a class="sourceLine" id="cb1-10" title="10"></a>
-<a class="sourceLine" id="cb1-11" title="11"><span class="dt">void</span></a>
-<a class="sourceLine" id="cb1-12" title="12">dtor()</a>
-<a class="sourceLine" id="cb1-13" title="13">{</a>
-<a class="sourceLine" id="cb1-14" title="14">    printf(<span class="st">&quot;after main</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
-<a class="sourceLine" id="cb1-15" title="15">}</a>
-<a class="sourceLine" id="cb1-16" title="16"></a>
-<a class="sourceLine" id="cb1-17" title="17"><span class="dt">void</span> (*pctor)() SECTION(<span class="st">&quot;.ctors&quot;</span>) = ctor;</a>
-<a class="sourceLine" id="cb1-18" title="18"><span class="dt">void</span> (*pdtor)() SECTION(<span class="st">&quot;.dtors&quot;</span>) = dtor;</a>
-<a class="sourceLine" id="cb1-19" title="19"></a>
-<a class="sourceLine" id="cb1-20" title="20"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb1-21" title="21">main()</a>
-<a class="sourceLine" id="cb1-22" title="22">{</a>
-<a class="sourceLine" id="cb1-23" title="23">    printf(<span class="st">&quot;main</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
-<a class="sourceLine" id="cb1-24" title="24">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb1-25" title="25">}</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="pp">#define SECTION(S) __attribute__ ((section(S)))</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="dt">void</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>ctor()</span>
+<span id="cb1-7"><a href="#cb1-7"></a>{</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    printf(<span class="st">&quot;before main</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb1-9"><a href="#cb1-9"></a>}</span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="dt">void</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>dtor()</span>
+<span id="cb1-13"><a href="#cb1-13"></a>{</span>
+<span id="cb1-14"><a href="#cb1-14"></a>    printf(<span class="st">&quot;after main</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb1-15"><a href="#cb1-15"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16"></a></span>
+<span id="cb1-17"><a href="#cb1-17"></a><span class="dt">void</span> (*pctor)() SECTION(<span class="st">&quot;.ctors&quot;</span>) = ctor;</span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="dt">void</span> (*pdtor)() SECTION(<span class="st">&quot;.dtors&quot;</span>) = dtor;</span>
+<span id="cb1-19"><a href="#cb1-19"></a></span>
+<span id="cb1-20"><a href="#cb1-20"></a><span class="dt">int</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>main()</span>
+<span id="cb1-22"><a href="#cb1-22"></a>{</span>
+<span id="cb1-23"><a href="#cb1-23"></a>    printf(<span class="st">&quot;main</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb1-24"><a href="#cb1-24"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb1-25"><a href="#cb1-25"></a>}</span></code></pre></div>
 <p>编译时不需要其他的 flags. 从这里可以看到, 我只是把相应的函数的指针传递给了 <code>.ctors</code> 和 <code>.dtors</code> section. 程序运行情况想必都能预测.</p>
 <p>有了这样的特性, 如果不是在 bare metal 那么硬核的场景下, 依赖 GCC 的扩展来写自己的共享库问题应该不大, 比如写一个管理内存的运行时, 可以用它方便地在 <code>.main</code> 之外做一些自定义工作, 尤其是内存管理机制的初始化.</p>
 <p>在读源码时, 还看到了一个好玩的东西叫 <code>WINAPI</code>, 这个关键字确实在 Windows 编程太常见, 然而好玩的地方在它背后其实是 <code>__stdcall</code> 这个关键字, 一搜发现是 calling conventions 这样的领域, 还有一组专业名词叫 function prologue/epilogue, 其实就是一套定义函数 caller 和 callee 行为的一些规范, 比如哪些寄存器保存参数, 栈的内容怎么管理, 虽然栈管理的规范要丰富一些, 但是有些编译器优化会涉及到寄存器, 而且一般会很头疼, 比如看到云风老师在博客里描述的一个 <a href="https://blog.codingnow.com/2017/09/direct3d12_return_struct_calling_convention_bug.html">问题</a>, 就是结构体在返回给 caller 的时候被 GCC 优化, D3D 的接口在取返回的结构体地址时和 GCC 不统一, 直接把 <code>this</code> 指针内容 (虚表) 写坏了. 我还留了个言问是不是 D3D 遵循了 <code>__vectorcall</code> 这样的规范, 然而自己没有精读过出错的代码, 怕是要被老师扁死. 不过如果真是这样的问题, GCC 自己有这样的关键字, 规避一下优化就好了.</p>
@@ -57,7 +59,10 @@
     END
   </footer>
 
-  <script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  <script
+    type="text/javascript"
+    async
+    src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 </body>
 

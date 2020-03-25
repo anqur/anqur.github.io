@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="initial-scale=1">
+
   <title>Horrible RAM</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
@@ -18,8 +20,8 @@
 <p>农历新年第一天, 新春大吉了!</p>
 <p>之前使用 <code>setjmp.h</code> 结合对 <code>%rsp</code>/<code>%esp</code> 栈指针寄存器的直接操作制作过一个 asymmetric coroutine 库 <a href="https://github.com/anqurvanillapy/acoro">acoro</a>, 不过说实话机制非常不成熟, 可能都算不上 asymmetric... 主要是对 coroutine 的简单调度算是有了一个浅层次的认识. 这篇文主要是初探 ECMAScript 6 标准下的 task 和 microtask 机制, 但是具体标准以及 spec 细节我还未深入阅读, 先从简单例子看起. 更多详细内容请参考 <a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">此文</a>, 以下内容也做了大量参考.</p>
 <p>什么是 JavaScript 的 task 和 microtask 呢? 其实一切都得从大佬 Jake Archibald 于 2015 年的一篇文章 (上述的链接) 和上星期他在推特发的 <a href="https://twitter.com/jaffathecake/status/963007466471677953">quiz</a> 说起, 但我们不妨先来看看这个更简单的 quiz 作引导:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode js"><code class="sourceCode javascript"><a class="sourceLine" id="cb1-1" title="1"><span class="at">setTimeout</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">1</span>)<span class="op">,</span> <span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="va">console</span>.<span class="at">log</span>(<span class="dv">2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1"></a><span class="pp">setTimeout</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">1</span>)<span class="op">,</span> <span class="dv">0</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">2</span>)</span></code></pre></div>
 <p>上述代码输出的数字序列是什么呢? 答案应该是很好得到的. 这里我们就可以引申 task 这个概念了, task 的水平抽象层次是比较深的, 意思是涉及到 JS 内部如延时和 DOM 操作等等深层次的同步行为的工作, 在 task 之间浏览器是有可能更新渲染的. 可以想象 event listener, parsing HTML 乃至脚本执行等工作应属于 task 的范畴. 所以代码执行步骤如下:</p>
 <ol type="1">
 <li>将脚本的执行放入 task 队列中</li>
@@ -29,13 +31,13 @@
 <li>从 task 队列取出相应 callback, 执行 <code>console.log(1)</code></li>
 </ol>
 <p>答案即是 <code>21</code>. 换而言之, 我们可以认为是将 <code>() =&gt; console.log(1)</code> 这个闭包作为 coroutine 传入主线程调度器, 当主 coroutine (caller) 结束后将该闭包进行 resume 恢复执行. 了解这一点后, 我们就可以继续探讨 microtask 了, 来看以下 quiz:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode js"><code class="sourceCode javascript"><a class="sourceLine" id="cb2-1" title="1"><span class="at">setTimeout</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">1</span>)<span class="op">,</span> <span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="va">Promise</span>.<span class="at">resolve</span>()</a>
-<a class="sourceLine" id="cb2-4" title="4">  .<span class="at">then</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb2-5" title="5">  .<span class="at">then</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">3</span>))</a>
-<a class="sourceLine" id="cb2-6" title="6"></a>
-<a class="sourceLine" id="cb2-7" title="7"><span class="va">console</span>.<span class="at">log</span>(<span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">setTimeout</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">1</span>)<span class="op">,</span> <span class="dv">0</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="bu">Promise</span><span class="op">.</span><span class="fu">resolve</span>()</span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">2</span>))</span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">3</span>))</span>
+<span id="cb2-6"><a href="#cb2-6"></a></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">4</span>)</span></code></pre></div>
 <p>答案也不难猜, 但是 microtask 是怎么运作的呢? 首先 microtask 顾名思义是比 task 水平层次要浅的抽象, 通常在每个 task 之后运行 (别忘了 JS 栈上的脚本执行也算是一个 task), 它处理异步行为时比开启一个新的 task 要轻, 如 <code>Promise</code> 的 callback. 这段代码的执行步骤是这样的:</p>
 <ol type="1">
 <li>将脚本执行放入 task 队列</li>
@@ -49,12 +51,12 @@
 <li>从 task 队列取出 <code>setTimeout</code> 相应 callback, 执行 <code>console.log(1)</code></li>
 </ol>
 <p>答案即是 <code>4231</code>, 但是这个例子是比较特殊的, 因为 <code>Promise.resolve()</code> 立即返回了 resolve 了的相当于没有内在逻辑的 <code>Promise</code>, 从而直接触碰了 <code>.then()</code> 而引起 microtask 的入列操作, 所以以下的 quiz 就更有意思了:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode js"><code class="sourceCode javascript"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">new</span> <span class="at">Promise</span>(resolve <span class="kw">=&gt;</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb3-2" title="2">  <span class="at">resolve</span>(<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb3-3" title="3">  <span class="va">Promise</span>.<span class="at">resolve</span>().<span class="at">then</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb3-4" title="4"><span class="op">}</span>).<span class="at">then</span>(n <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(n))</a>
-<a class="sourceLine" id="cb3-5" title="5"></a>
-<a class="sourceLine" id="cb3-6" title="6"><span class="va">console</span>.<span class="at">log</span>(<span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">new</span> <span class="bu">Promise</span>(resolve <span class="kw">=&gt;</span> {</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  resolve(<span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="bu">Promise</span><span class="op">.</span><span class="fu">resolve</span>()<span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">2</span>))</span>
+<span id="cb3-4"><a href="#cb3-4"></a>})<span class="op">.</span><span class="fu">then</span>(n <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(n))</span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">3</span>)</span></code></pre></div>
 <p>当然, 先留下十分钟的思考时间... 时间到!</p>
 <p>代码的执行步骤是这样的:</p>
 <ol type="1">
@@ -68,14 +70,14 @@
 <li>microtask 执行出列操作, 执行 <code>console.log(1)</code></li>
 </ol>
 <p>答案即是 <code>321</code>, <code>new Promise()</code> 的语句块按顺序执行导致以上的结果. 既然如此, 那么如何在保留 <code>resolve(1)</code> 语句的同时让 <code>n =&gt; console.log(n)</code> 先进入 microtask 队列呢? 一个巧妙的办法如下:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode js"><code class="sourceCode javascript"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">new</span> <span class="at">Promise</span>(resolve <span class="kw">=&gt;</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb4-2" title="2">  <span class="va">Promise</span>.<span class="at">resolve</span>().<span class="at">then</span>(() <span class="kw">=&gt;</span> <span class="op">{</span></a>
-<a class="sourceLine" id="cb4-3" title="3">    <span class="at">resolve</span>(<span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb4-4" title="4">    <span class="va">Promise</span>.<span class="at">resolve</span>().<span class="at">then</span>(() <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb4-5" title="5">  <span class="op">}</span>)</a>
-<a class="sourceLine" id="cb4-6" title="6"><span class="op">}</span>).<span class="at">then</span>(n <span class="kw">=&gt;</span> <span class="va">console</span>.<span class="at">log</span>(n))</a>
-<a class="sourceLine" id="cb4-7" title="7"></a>
-<a class="sourceLine" id="cb4-8" title="8"><span class="va">console</span>.<span class="at">log</span>(<span class="dv">3</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">new</span> <span class="bu">Promise</span>(resolve <span class="kw">=&gt;</span> {</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="bu">Promise</span><span class="op">.</span><span class="fu">resolve</span>()<span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> {</span>
+<span id="cb4-3"><a href="#cb4-3"></a>    resolve(<span class="dv">1</span>)</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="bu">Promise</span><span class="op">.</span><span class="fu">resolve</span>()<span class="op">.</span><span class="fu">then</span>(() <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">2</span>))</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  })</span>
+<span id="cb4-6"><a href="#cb4-6"></a>})<span class="op">.</span><span class="fu">then</span>(n <span class="kw">=&gt;</span> <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(n))</span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="dv">3</span>)</span></code></pre></div>
 <p>这样子遇到第二行的 <code>Promise.resolve().then()</code> 后, 把其 callback 放入 microtask 列, 接着就能把 <code>n =&gt; console.log(n)</code> 放入 microtask 列中了, 而第一次放入的这个 callback 的效用只是延缓了 <code>() =&gt; console.log(2)</code> 的入列而已, 虽然浪费了一个临时的对象.</p>
 <p>这一个实践理解起来不难, 也算是我对非抢占式调度学习中的一些小插曲, 最大的意义其实在于不再停留在那种 "JS 引擎遇到耗时长的工作就 yield" 的错觉当中, JS 的执行是有迹可循有所定义的, 并且这种根据浏览器和引擎本身做出来的 task 和 microtask 分级, 对我而言其实也算是一种解决问题的新思路.</p>
 <p>新的一年也不能停止学习呀.</p>
@@ -86,7 +88,10 @@
     END
   </footer>
 
-  <script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  <script
+    type="text/javascript"
+    async
+    src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 </body>
 

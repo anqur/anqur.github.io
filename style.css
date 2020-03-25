@@ -4,48 +4,20 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: monospace;
   scroll-behavior: smooth;
 }
 
-a {
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-}
-  main a {
-    color: #800;
-    text-decoration: none;
-    font-weight: normal;
-  }
-
-pre {
-  padding-left: 1em;
-  border-left: solid 1px #aaa;
-  overflow: overlay;
-}
-  code { font-weight: bold; }
-  pre > code { font-weight: normal; }
-
-blockquote { font-style: italic; }
-h1 { font-size: larger; }
-h2 { font-size: large; }
-h3 { font-size: medium; }
 img { max-width: 100%; }
 
 header, main, footer {
   width: 90%;
   margin: 0 auto;
 }
-
-header, footer {
-  display: flex;
-  justify-content: space-between;
-}
-  footer {
-    margin-bottom: 3em;
+  header, footer {
+    display: flex;
+    justify-content: space-between;
   }
-
-@media screen and (min-width: 640px) {
-  header, main, footer { width: 50em; }
-}
+    footer { margin-bottom: 3em; }
+  @media screen and (min-width: 640px) {
+    header, main, footer { width: 50em; }
+  }
