@@ -63,7 +63,7 @@ private:
 
     __cache_line_pad_t pad0_{};
 
-    // 缓冲长度, 
+    // 缓冲长度,
     const std::size_t siz_;
     const std::size_t buf_mask_;
     node_t* const buf_;
