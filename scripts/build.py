@@ -5,9 +5,11 @@ from pathlib import Path
 # Why not `asyncio`?  You are thinking peach!  That's not parallelism!
 from multiprocessing import Process, JoinableQueue, Lock, Value
 
+_INPUT_PATHS = [Path("."), *Path("post").iterdir()]
+
 
 def collector(pending_items, lock, total, is_force):
-    for post in [Path("."), *Path("post").iterdir()]:
+    for post in _INPUT_PATHS:
         if not post.is_dir():
             continue
 
@@ -49,15 +51,15 @@ def generator(pending_items, lock, done, total, tmpl):
 
 
 def main():
-    P = argparse.ArgumentParser()
-    P.add_argument(
+    p = argparse.ArgumentParser()
+    p.add_argument(
         "--force", "-f", action="store_true", help="Force building all posts",
     )
-    P.add_argument(
+    p.add_argument(
         "--jobs", "-j", type=int, default=4, help="Number of jobs",
     )
 
-    args = P.parse_args()
+    args = p.parse_args()
 
     tmpl = None
     with open(Path("scripts") / "template.html") as f:
