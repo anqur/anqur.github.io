@@ -1,12 +1,4 @@
-[AnqurVanillapy](https://github.com/anqurvanillapy) 的博客.
-
-```
- _   _                 _ _     _      ____      _    __  __
-| | | | ___  _ __ _ __(_) |__ | | ___|  _ \    / \  |  \/  |
-| |_| |/ _ \| '__| '__| | '_ \| |/ _ \ |_) |  / _ \ | |\/| |
-|  _  | (_) | |  | |  | | |_) | |  __/  _ <  / ___ \| |  | |
-|_| |_|\___/|_|  |_|  |_|_.__/|_|\___|_| \_\/_/   \_\_|  |_|
-```
+[Anqur](//github.com/anqurvanillapy) 的博客.
 
 ## Contents
 
@@ -32,6 +24,3 @@
 各种讨论和 bugs 可以创建相应
 [Issues](https://github.com/anqurvanillapy/anqurvanillapy.github.io/issues).
 文章遵守 `cc-by-4.0` 协议.
-
-*Horrible RAM* 是 *oroblram* 的谐音, 反过来即是 *Marlboro*, 是对 2011 年电影
-The Girl with the Dragon Tattoo 中男主角在遭遇失败后购买的红万香烟的致敬.

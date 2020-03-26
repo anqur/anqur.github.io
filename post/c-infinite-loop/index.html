@@ -6,13 +6,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="initial-scale=1">
 
-  <title>Horrible RAM</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>tl;dw | Anqur</title>
+  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
 <body>
   <header>
-    <a href="/">Horrible RAM</a>
+    <h1><a href="/">tl;dw</a></h1>
   </header>
 
   <main>
@@ -20,68 +21,68 @@
 <p>使用 C 语言能够写出多少种无限循环呢? 这个问题可能是没有什么实际意义的, 你可以说不过是对地址跳转指令的一系列抽象而已. 然而这不妨我们对 C 标准库和 POSIX 标准函数做一些其他方面的理解和扩展.</p>
 <p>让我们来数数有多少种实现无限循环的可能.</p>
 <p>首先我们定义一个测试用的函数, 这个函数模拟一个半人半神的哲学家, 他只会思考, 并不会拿起筷子来吃东西.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1"></a><span class="dt">void</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>think()</span>
-<span id="cb1-3"><a href="#cb1-3"></a>{</span>
-<span id="cb1-4"><a href="#cb1-4"></a>    printf(<span class="st">&quot;thinking w/o eating...</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
-<span id="cb1-5"><a href="#cb1-5"></a>    sleep(<span class="dv">1</span>);</span>
-<span id="cb1-6"><a href="#cb1-6"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb1-2" title="2">think()</a>
+<a class="sourceLine" id="cb1-3" title="3">{</a>
+<a class="sourceLine" id="cb1-4" title="4">    printf(<span class="st">&quot;thinking w/o eating...</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-5" title="5">    sleep(<span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb1-6" title="6">}</a></code></pre></div>
 <h2 id="while-1"><code>while (1) {}</code></h2>
 <p>个人目测 C 程序员相对最熟悉的应该是 <code>while</code> 写出来的无限循环, 语义上也相对清晰. 不过如 ANSI C 的标准中并没有布尔类型的概念, 非零值代表着真值. <code>while (true);</code> 属于 C++ 的世界.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1"></a><span class="dt">void</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>infini_while()</span>
-<span id="cb2-3"><a href="#cb2-3"></a>{</span>
-<span id="cb2-4"><a href="#cb2-4"></a>    <span class="cf">while</span> (<span class="dv">1</span>) think();</span>
-<span id="cb2-5"><a href="#cb2-5"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb2-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb2-2" title="2">infini_while()</a>
+<a class="sourceLine" id="cb2-3" title="3">{</a>
+<a class="sourceLine" id="cb2-4" title="4">    <span class="cf">while</span> (<span class="dv">1</span>) think();</a>
+<a class="sourceLine" id="cb2-5" title="5">}</a></code></pre></div>
 <h2 id="do-while-1"><code>do {} while (1);</code></h2>
 <p>有 <code>while</code> 自然就可以转换为 <em>do-while</em>, 当然语义不同, 编译出来的指令也不同, 可以猜想一下指令会是怎样然后 <code>-S</code> 验证一番.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1"></a><span class="dt">void</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>infini_do_while()</span>
-<span id="cb3-3"><a href="#cb3-3"></a>{</span>
-<span id="cb3-4"><a href="#cb3-4"></a>    <span class="cf">do</span> { think(); } <span class="cf">while</span> (<span class="dv">1</span>);</span>
-<span id="cb3-5"><a href="#cb3-5"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb3-2" title="2">infini_do_while()</a>
+<a class="sourceLine" id="cb3-3" title="3">{</a>
+<a class="sourceLine" id="cb3-4" title="4">    <span class="cf">do</span> { think(); } <span class="cf">while</span> (<span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb3-5" title="5">}</a></code></pre></div>
 <h2 id="for"><code>for (;;) {}</code></h2>
 <p>使用 <code>for</code> 来实现无限循环只能证明一点, 那就是此人一定是个热衷 UNIX 的开发者... 值得一提的是, 它编译出来的指令和 <code>while (1);</code> 是一致的.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1"></a><span class="dt">void</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>infini_for()</span>
-<span id="cb4-3"><a href="#cb4-3"></a>{</span>
-<span id="cb4-4"><a href="#cb4-4"></a>    <span class="cf">for</span> (;;) think();</span>
-<span id="cb4-5"><a href="#cb4-5"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb4-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb4-2" title="2">infini_for()</a>
+<a class="sourceLine" id="cb4-3" title="3">{</a>
+<a class="sourceLine" id="cb4-4" title="4">    <span class="cf">for</span> (;;) think();</a>
+<a class="sourceLine" id="cb4-5" title="5">}</a></code></pre></div>
 <h2 id="goto"><code>goto</code></h2>
 <p>关于 <code>goto</code> 程序员总是能引出无数的长篇大论, 然而我相信大多数人都能把它用得好 (除非想换份工作了).</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1"></a><span class="dt">void</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>infini_label()</span>
-<span id="cb5-3"><a href="#cb5-3"></a>{</span>
-<span id="cb5-4"><a href="#cb5-4"></a>loop:</span>
-<span id="cb5-5"><a href="#cb5-5"></a>    think();</span>
-<span id="cb5-6"><a href="#cb5-6"></a>    <span class="cf">goto</span> loop;</span>
-<span id="cb5-7"><a href="#cb5-7"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb5-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb5-2" title="2">infini_label()</a>
+<a class="sourceLine" id="cb5-3" title="3">{</a>
+<a class="sourceLine" id="cb5-4" title="4">loop:</a>
+<a class="sourceLine" id="cb5-5" title="5">    think();</a>
+<a class="sourceLine" id="cb5-6" title="6">    <span class="cf">goto</span> loop;</a>
+<a class="sourceLine" id="cb5-7" title="7">}</a></code></pre></div>
 <h2 id="setjmp.h"><code>setjmp.h</code></h2>
 <p>使用 <code>setjmp</code>/<code>longjmp</code> 进行跳转并不仅仅涉及到最底层的一些跳转指令, <code>jmp_buf</code> 保存了执行 <code>setjmp</code> 时的 CPU 上下文和一些相关调用环境, 不过这个用法类似 C++ 中的异常抛出, 不恰当的使用可能会导致内存泄露.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1"></a><span class="dt">void</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>infini_setjmp()</span>
-<span id="cb6-3"><a href="#cb6-3"></a>{</span>
-<span id="cb6-4"><a href="#cb6-4"></a>    <span class="dt">static</span> jmp_buf buf; <span class="co">// 用于保存上下文</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>    setjmp(buf);</span>
-<span id="cb6-6"><a href="#cb6-6"></a>    think();</span>
-<span id="cb6-7"><a href="#cb6-7"></a>    longjmp(buf, <span class="dv">0</span>);    <span class="co">// 跳转, 转换上下文, 并且使 `setjmp&#39; 返回 0</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb6-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb6-2" title="2">infini_setjmp()</a>
+<a class="sourceLine" id="cb6-3" title="3">{</a>
+<a class="sourceLine" id="cb6-4" title="4">    <span class="dt">static</span> jmp_buf buf; <span class="co">// 用于保存上下文</span></a>
+<a class="sourceLine" id="cb6-5" title="5">    setjmp(buf);</a>
+<a class="sourceLine" id="cb6-6" title="6">    think();</a>
+<a class="sourceLine" id="cb6-7" title="7">    longjmp(buf, <span class="dv">0</span>);    <span class="co">// 跳转, 转换上下文, 并且使 `setjmp&#39; 返回 0</span></a>
+<a class="sourceLine" id="cb6-8" title="8">}</a></code></pre></div>
 <h2 id="ucontext.h"><code>ucontext.h</code></h2>
 <p>使用 <code>setcontext</code>/<code>getcontext</code> 类似使用 <code>setjmp</code>/<code>longjmp</code> 之流, 不过语义上更加注重上下文的设置和保存, <code>getcontext</code> 会保存 PC, 所以以下的代码中调用 <code>setcontext</code> 的时候会重新将 PC 设置到 <code>think</code> 调用之前.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1"></a><span class="dt">void</span></span>
-<span id="cb7-2"><a href="#cb7-2"></a>infini_ucontext()</span>
-<span id="cb7-3"><a href="#cb7-3"></a>{</span>
-<span id="cb7-4"><a href="#cb7-4"></a>    ucontext_t ctx;</span>
-<span id="cb7-5"><a href="#cb7-5"></a>    getcontext(&amp;ctx);</span>
-<span id="cb7-6"><a href="#cb7-6"></a>    think();</span>
-<span id="cb7-7"><a href="#cb7-7"></a>    setcontext(&amp;ctx);</span>
-<span id="cb7-8"><a href="#cb7-8"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb7-1" title="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb7-2" title="2">infini_ucontext()</a>
+<a class="sourceLine" id="cb7-3" title="3">{</a>
+<a class="sourceLine" id="cb7-4" title="4">    ucontext_t ctx;</a>
+<a class="sourceLine" id="cb7-5" title="5">    getcontext(&amp;ctx);</a>
+<a class="sourceLine" id="cb7-6" title="6">    think();</a>
+<a class="sourceLine" id="cb7-7" title="7">    setcontext(&amp;ctx);</a>
+<a class="sourceLine" id="cb7-8" title="8">}</a></code></pre></div>
 <p>其他的尝试未来也许会更新. 当然直接在 C 中插入 <code>__asm__</code> 来放入相关的指令代码是完全可行的, 目前不想这么折腾. (除非未来我想做个跨平台的协程库? <em>:)</em>)</p>
 </article>
   </main>
 
   <footer>
-    END
+    Too long, didn't write.
   </footer>
 
   <script

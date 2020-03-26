@@ -1,0 +1,51 @@
+/* General style */
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+header, main, footer {
+  width: 90%;
+  margin: 0 auto;
+}
+  header, footer {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+  }
+  footer { margin: 3em auto; }
+  @media screen and (min-width: 640px) {
+    header, main, footer { width: 40%; }
+  }
+
+img { max-width: 100%; }
+
+/* Custom style */
+
+html, body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: darkred;
+}
+
+header a {
+  color: black;
+}
+header > h1 {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: xx-large;
+  letter-spacing: 1em;
+}
+
+footer {
+  font-style: italic;
+  font-weight: bold;
+}
