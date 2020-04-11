@@ -20,17 +20,17 @@
     <article><h1 id="maybet-与调用规范"><code>maybe&lt;T&gt;</code> 与调用规范</h1>
 <p>之前基友和我聊到 V8 的一些源码的东西, 他和我提到 V8 的代码库中大量的使用到了 <code>v8::Maybe&lt;T&gt;</code> 这一数据结构, 我便花了点时间走马观花地研究了一番.</p>
 <p>谈论 Maybe 结构不得不从 Haskell 说起, <code>v8::Maybe&lt;T&gt;</code> 的结构也提到了其直接来源是 Haskell 中的 <a href="https://hackage.haskell.org/package/base-4.10.1.0/docs/Data-Maybe.html"><code>Data.Maybe</code></a>. Maybe 是一种带有选项性质的 monad, 当某变量或函数接收到了 Maybe 类型的值时, 它可能携带了某种其他类型 (如 <code>Int</code>) 的值, 也可能是所谓的 nil 值. 将此翻译成 Haskell 的语言的话, 如果携带具体的值 <code>a</code>, 那么将表示成 <code>Just a</code>, 如果为空, 那么将表示成 <code>Nothing</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" title="1"><span class="ot">returnSomething ::</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</a>
-<a class="sourceLine" id="cb1-2" title="2">returnSomething x <span class="ot">=</span> <span class="dt">Just</span> x</a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co">-- 或 returnSomething = Just</span></a>
-<a class="sourceLine" id="cb1-4" title="4"></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="ot">returnNothing ::</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</a>
-<a class="sourceLine" id="cb1-6" title="6">returnNothing x <span class="ot">=</span> <span class="dt">Nothing</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">returnSomething ::</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span>
+<span id="cb1-2"><a href="#cb1-2"></a>returnSomething x <span class="ot">=</span> <span class="dt">Just</span> x</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co">-- 或 returnSomething = Just</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="ot">returnNothing ::</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span>
+<span id="cb1-6"><a href="#cb1-6"></a>returnNothing x <span class="ot">=</span> <span class="dt">Nothing</span></span></code></pre></div>
 <p>这样的结构有什么样的用处呢? 它主要围绕的是 <em>safety</em> 这一方面. 比如, 如果函数接收的用户输入有可能导致系统的异常抛出, 那么可以在其上层用 <code>Nothing</code> 隔绝好边界条件, 用 <code>Just</code> 返回执行结果, 假设我们要隔绝 <em>divide by zero</em> 这样的异常流程:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" title="1"><span class="ot">safeDiv ::</span> (<span class="dt">Ord</span> a, <span class="dt">Floating</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</a>
-<a class="sourceLine" id="cb2-2" title="2">safeDiv a b</a>
-<a class="sourceLine" id="cb2-3" title="3">    <span class="op">|</span> b <span class="op">==</span> <span class="dv">0</span>    <span class="ot">=</span> <span class="dt">Nothing</span></a>
-<a class="sourceLine" id="cb2-4" title="4">    <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="dt">Just</span> (a <span class="op">/</span> b)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">safeDiv ::</span> (<span class="dt">Ord</span> a, <span class="dt">Floating</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span>
+<span id="cb2-2"><a href="#cb2-2"></a>safeDiv a b</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="op">|</span> b <span class="op">==</span> <span class="dv">0</span>    <span class="ot">=</span> <span class="dt">Nothing</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="dt">Just</span> (a <span class="op">/</span> b)</span></code></pre></div>
 <p>这样一来, 我们就不需要理解系统抛出的异常, 比如像 Haskell 那样去处理 <code>Infinity</code> 和 <code>-Infinity</code> 这些我们并不需要考虑的边界了.</p>
 <blockquote>
 <ul>
@@ -40,156 +40,156 @@
 </blockquote>
 <p>接下来要做的, 就是将这样一种机制搬到 C++ 上去. 我们并不需要去生搬硬套 monad 的概念到 C++ 中去, 只要实现其相应的行为接口, 使用泛型来覆盖大部分类型的操作, 维护相应的内部状态即可 (有趣的是, 维基百科中 monad 的词条第一个例子就是 Maybe). 相对完整的实现可以阅读这个 <a href="https://github.com/anqurvanillapy/maybe">仓库</a> 的代码, 但是这里要讨论一些实现方面的细节:</p>
 <p><code>from_maybe</code> 接口用于接收一个类型为 T 的值 <code>v</code>, 如果此 Maybe 对象内部为 <code>Nothing</code> 则返回 <code>v</code>, 相当于默认值, 否则返回内部对象的值.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb3-2" title="2"><span class="kw">inline</span> T</a>
-<a class="sourceLine" id="cb3-3" title="3">maybe&lt;T&gt;::from_maybe(<span class="at">const</span> T&amp; v) <span class="at">const</span></a>
-<a class="sourceLine" id="cb3-4" title="4">{</a>
-<a class="sourceLine" id="cb3-5" title="5">    <span class="cf">return</span> <span class="va">has_value_</span> ? <span class="va">value_</span> : v;</a>
-<a class="sourceLine" id="cb3-6" title="6">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">inline</span> T</span>
+<span id="cb3-3"><a href="#cb3-3"></a>maybe&lt;T&gt;::from_maybe(<span class="at">const</span> T&amp; v) <span class="at">const</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>{</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    <span class="cf">return</span> <span class="va">has_value_</span> ? <span class="va">value_</span> : v;</span>
+<span id="cb3-6"><a href="#cb3-6"></a>}</span></code></pre></div>
 <p><code>from_just</code> 接口在内部为 <code>Nothing</code> 时要注意抛出异常. 值得一提的是, 在 V8 源码的声明中这种情况被标注为 <em>unlikely</em>, 说明这种情况一般是致命 (fatal) 的, 需要编程人员避免. 所以在此我也考虑直接抛出 <code>std::runtime_error</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw">inline</span> T</a>
-<a class="sourceLine" id="cb4-3" title="3">maybe&lt;T&gt;::from_just() <span class="at">const</span></a>
-<a class="sourceLine" id="cb4-4" title="4">{</a>
-<a class="sourceLine" id="cb4-5" title="5">    <span class="cf">if</span> (!is_just()) <span class="cf">throw</span> <span class="bu">std::</span>runtime_error(<span class="st">&quot;from_just: nothing&quot;</span>);</a>
-<a class="sourceLine" id="cb4-6" title="6">    <span class="cf">return</span> <span class="va">value_</span>;</a>
-<a class="sourceLine" id="cb4-7" title="7">}</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">inline</span> T</span>
+<span id="cb4-3"><a href="#cb4-3"></a>maybe&lt;T&gt;::from_just() <span class="at">const</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>{</span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="cf">if</span> (!is_just()) <span class="cf">throw</span> <span class="bu">std::</span>runtime_error(<span class="st">&quot;from_just: nothing&quot;</span>);</span>
+<span id="cb4-6"><a href="#cb4-6"></a>    <span class="cf">return</span> <span class="va">value_</span>;</span>
+<span id="cb4-7"><a href="#cb4-7"></a>}</span></code></pre></div>
 <p><code>operator==</code> 的操作符重载实现比较巧妙, 可以耐心读一读, 当然我直接抄的 V8 了... <code>operator!=</code> 则是前者的取反情况.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb5-2" title="2"><span class="kw">inline</span> <span class="dt">bool</span></a>
-<a class="sourceLine" id="cb5-3" title="3">maybe&lt;T&gt;::<span class="kw">operator</span>==(<span class="at">const</span> maybe&amp; other) <span class="at">const</span></a>
-<a class="sourceLine" id="cb5-4" title="4">{</a>
-<a class="sourceLine" id="cb5-5" title="5">    <span class="cf">return</span> (is_just() == other.is_just())</a>
-<a class="sourceLine" id="cb5-6" title="6">        &amp;&amp; (!is_just() || from_just() == other.from_just());</a>
-<a class="sourceLine" id="cb5-7" title="7">}</a>
-<a class="sourceLine" id="cb5-8" title="8"></a>
-<a class="sourceLine" id="cb5-9" title="9"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb5-10" title="10"><span class="kw">inline</span> <span class="dt">bool</span></a>
-<a class="sourceLine" id="cb5-11" title="11">maybe&lt;T&gt;::<span class="kw">operator</span>!=(<span class="at">const</span> maybe&amp; other) <span class="at">const</span></a>
-<a class="sourceLine" id="cb5-12" title="12">{</a>
-<a class="sourceLine" id="cb5-13" title="13">    <span class="cf">return</span> !<span class="kw">operator</span>==(other);</a>
-<a class="sourceLine" id="cb5-14" title="14">}</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">inline</span> <span class="dt">bool</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>maybe&lt;T&gt;::<span class="kw">operator</span>==(<span class="at">const</span> maybe&amp; other) <span class="at">const</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>{</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="cf">return</span> (is_just() == other.is_just())</span>
+<span id="cb5-6"><a href="#cb5-6"></a>        &amp;&amp; (!is_just() || from_just() == other.from_just());</span>
+<span id="cb5-7"><a href="#cb5-7"></a>}</span>
+<span id="cb5-8"><a href="#cb5-8"></a></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="kw">inline</span> <span class="dt">bool</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>maybe&lt;T&gt;::<span class="kw">operator</span>!=(<span class="at">const</span> maybe&amp; other) <span class="at">const</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>{</span>
+<span id="cb5-13"><a href="#cb5-13"></a>    <span class="cf">return</span> !<span class="kw">operator</span>==(other);</span>
+<span id="cb5-14"><a href="#cb5-14"></a>}</span></code></pre></div>
 <p>最后, 根据现实的使用场景, 应将 <code>maybe&lt;T&gt;</code> 的 ctors 默认设置为私有, 由友元类型 <code>just&lt;T&gt;</code> 和 <code>nothing&lt;T&gt;</code> 来构造.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb6-2" title="2">maybe&lt;T&gt;</a>
-<a class="sourceLine" id="cb6-3" title="3">nothing()</a>
-<a class="sourceLine" id="cb6-4" title="4">{</a>
-<a class="sourceLine" id="cb6-5" title="5">    <span class="cf">return</span> maybe&lt;T&gt;();</a>
-<a class="sourceLine" id="cb6-6" title="6">}</a>
-<a class="sourceLine" id="cb6-7" title="7"></a>
-<a class="sourceLine" id="cb6-8" title="8"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb6-9" title="9">maybe&lt;T&gt;</a>
-<a class="sourceLine" id="cb6-10" title="10">just(<span class="at">const</span> T&amp; v)</a>
-<a class="sourceLine" id="cb6-11" title="11">{</a>
-<a class="sourceLine" id="cb6-12" title="12">    <span class="cf">return</span> maybe&lt;T&gt;(v);</a>
-<a class="sourceLine" id="cb6-13" title="13">}</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb6-2"><a href="#cb6-2"></a>maybe&lt;T&gt;</span>
+<span id="cb6-3"><a href="#cb6-3"></a>nothing()</span>
+<span id="cb6-4"><a href="#cb6-4"></a>{</span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="cf">return</span> maybe&lt;T&gt;();</span>
+<span id="cb6-6"><a href="#cb6-6"></a>}</span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb6-9"><a href="#cb6-9"></a>maybe&lt;T&gt;</span>
+<span id="cb6-10"><a href="#cb6-10"></a>just(<span class="at">const</span> T&amp; v)</span>
+<span id="cb6-11"><a href="#cb6-11"></a>{</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="cf">return</span> maybe&lt;T&gt;(v);</span>
+<span id="cb6-13"><a href="#cb6-13"></a>}</span></code></pre></div>
 <p>讲到这里, 我们不妨思考一下为什么这样的数据类型成为了 V8 中的主流, 或者换个角度, 甚至在 Rust 语言中, 类似 Maybe 的 <code>std::option::Option</code> 类型的模式匹配以及其 <code>expect</code>, <code>unwrap</code> 的使用已经成为公认的最佳实践?</p>
 <h2 id="调用规范">调用规范</h2>
 <p>我们可以从一些历史来追溯有关函数调用规范的探讨.</p>
 <h3 id="gnulinux-syscall">1. GNU/Linux syscall</h3>
 <p>在 GNU/Linux 操作系统中的系统调用中, 我们遵循着成功返回 0 或具体数值, 返回负值则代表出错的规范, 出错时 OS 设置好了相对应的 <code>errno</code> 可供 <code>perror</code> 等接口使用. 这也是为什么 <code>getchar</code> 的返回值类型是 <code>int</code> 的原因.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb7-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="pp">#include </span><span class="im">&lt;fcntl.h&gt;</span></a>
-<a class="sourceLine" id="cb7-3" title="3"></a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb7-5" title="5">main()</a>
-<a class="sourceLine" id="cb7-6" title="6">{</a>
-<a class="sourceLine" id="cb7-7" title="7">    <span class="co">// 假设 foo.txt 不存在.</span></a>
-<a class="sourceLine" id="cb7-8" title="8">    <span class="dt">int</span> fd = open(<span class="st">&quot;foo.txt&quot;</span>, O_RDONLY);</a>
-<a class="sourceLine" id="cb7-9" title="9">    <span class="cf">if</span> (fd &lt; <span class="dv">0</span>) {</a>
-<a class="sourceLine" id="cb7-10" title="10">        perror(<span class="st">&quot;open error&quot;</span>);</a>
-<a class="sourceLine" id="cb7-11" title="11">        <span class="co">// Output:</span></a>
-<a class="sourceLine" id="cb7-12" title="12">        <span class="co">// open error: No such file or directory</span></a>
-<a class="sourceLine" id="cb7-13" title="13">    }</a>
-<a class="sourceLine" id="cb7-14" title="14"></a>
-<a class="sourceLine" id="cb7-15" title="15">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb7-16" title="16">}</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="pp">#include </span><span class="im">&lt;fcntl.h&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="dt">int</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>main()</span>
+<span id="cb7-6"><a href="#cb7-6"></a>{</span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="co">// 假设 foo.txt 不存在.</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="dt">int</span> fd = open(<span class="st">&quot;foo.txt&quot;</span>, O_RDONLY);</span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="cf">if</span> (fd &lt; <span class="dv">0</span>) {</span>
+<span id="cb7-10"><a href="#cb7-10"></a>        perror(<span class="st">&quot;open error&quot;</span>);</span>
+<span id="cb7-11"><a href="#cb7-11"></a>        <span class="co">// Output:</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>        <span class="co">// open error: No such file or directory</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>    }</span>
+<span id="cb7-14"><a href="#cb7-14"></a></span>
+<span id="cb7-15"><a href="#cb7-15"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb7-16"><a href="#cb7-16"></a>}</span></code></pre></div>
 <h3 id="cc-应用中返回数值或指针的场景">2. C/C++ 应用中返回数值或指针的场景</h3>
 <p>很多 C/C++ 的大项目遵循的是返回 0 和非 0 值来分别表示成功和异常, 用 <code>!</code> 操作符来判断函数返回值的情况. 在我接触到的大项目中, 还有 <em>单入口, 单出口</em> 这样的一些规范, 防止代码中多个 <code>return</code> 造成阅读上的障碍, 专注于返回值的设置, 如果需要跳出函数, 则使用 <code>goto</code> 调到函数的末尾的 <code>return</code> 即可.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb8-1" title="1"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb8-2" title="2">foo()</a>
-<a class="sourceLine" id="cb8-3" title="3">{</a>
-<a class="sourceLine" id="cb8-4" title="4">    <span class="cf">return</span> <span class="dv">0</span>; <span class="co">// oops something bad :(</span></a>
-<a class="sourceLine" id="cb8-5" title="5">}</a>
-<a class="sourceLine" id="cb8-6" title="6"></a>
-<a class="sourceLine" id="cb8-7" title="7"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb8-8" title="8">bar()</a>
-<a class="sourceLine" id="cb8-9" title="9">{</a>
-<a class="sourceLine" id="cb8-10" title="10">    <span class="dt">int</span> ok = foo();</a>
-<a class="sourceLine" id="cb8-11" title="11">    <span class="dt">int</span> ret;</a>
-<a class="sourceLine" id="cb8-12" title="12"></a>
-<a class="sourceLine" id="cb8-13" title="13">    <span class="co">// ! 操作符派上用场.</span></a>
-<a class="sourceLine" id="cb8-14" title="14">    <span class="cf">if</span> (!ok) {</a>
-<a class="sourceLine" id="cb8-15" title="15">        ret = <span class="dv">0</span>; <span class="co">// bad :(</span></a>
-<a class="sourceLine" id="cb8-16" title="16">        <span class="cf">goto</span> exit;</a>
-<a class="sourceLine" id="cb8-17" title="17">    }</a>
-<a class="sourceLine" id="cb8-18" title="18">    ret = <span class="dv">1</span>; <span class="co">// good :)</span></a>
-<a class="sourceLine" id="cb8-19" title="19"></a>
-<a class="sourceLine" id="cb8-20" title="20">    <span class="co">// 单入口单出口的设计.</span></a>
-<a class="sourceLine" id="cb8-21" title="21">exit:</a>
-<a class="sourceLine" id="cb8-22" title="22">    <span class="cf">return</span> ret;</a>
-<a class="sourceLine" id="cb8-23" title="23">}</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="#cb8-1"></a><span class="dt">int</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>foo()</span>
+<span id="cb8-3"><a href="#cb8-3"></a>{</span>
+<span id="cb8-4"><a href="#cb8-4"></a>    <span class="cf">return</span> <span class="dv">0</span>; <span class="co">// oops something bad :(</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>}</span>
+<span id="cb8-6"><a href="#cb8-6"></a></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="dt">int</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>bar()</span>
+<span id="cb8-9"><a href="#cb8-9"></a>{</span>
+<span id="cb8-10"><a href="#cb8-10"></a>    <span class="dt">int</span> ok = foo();</span>
+<span id="cb8-11"><a href="#cb8-11"></a>    <span class="dt">int</span> ret;</span>
+<span id="cb8-12"><a href="#cb8-12"></a></span>
+<span id="cb8-13"><a href="#cb8-13"></a>    <span class="co">// ! 操作符派上用场.</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>    <span class="cf">if</span> (!ok) {</span>
+<span id="cb8-15"><a href="#cb8-15"></a>        ret = <span class="dv">0</span>; <span class="co">// bad :(</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>        <span class="cf">goto</span> exit;</span>
+<span id="cb8-17"><a href="#cb8-17"></a>    }</span>
+<span id="cb8-18"><a href="#cb8-18"></a>    ret = <span class="dv">1</span>; <span class="co">// good :)</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a></span>
+<span id="cb8-20"><a href="#cb8-20"></a>    <span class="co">// 单入口单出口的设计.</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a>exit:</span>
+<span id="cb8-22"><a href="#cb8-22"></a>    <span class="cf">return</span> ret;</span>
+<span id="cb8-23"><a href="#cb8-23"></a>}</span></code></pre></div>
 <p><code>!</code> 操作符同样可以操作 <code>NULL</code> 空指针的情况, 配合 值传递/引用传递, 这一种规范几乎在 C/C++ 项目中处于统治地位. 值得一提的是, C++ 中的引用总是取到一个在内存中实际存在的区域, 所以本质上引用是不存在 nil 值这样的概念的, 当然了, <code>std::shared_ptr&lt;T&gt;</code> 便是个奇葩的存在.</p>
 <h3 id="c-应用中抛出异常的场景">3. C++ 应用中抛出异常的场景</h3>
 <p>这个其实也不用多说, 熟悉 Python/Java/... 的应该都能理解, 但是抛出异常在 C++ 中可不是什么好事, 它把抛出异常的位置到捕捉异常的位置的中间过程给忽略了, 而且如果选择不忽略, 容易被大量的 <code>try</code>/<code>catch</code> 代码块影响源码的结构. 更糟的是, stacktrace 什么的在一些主流的标准 C++ 运行时中被直接清理掉了, 在 production/release 那样的情况下难以追踪源码位置. 除此之外, 如果使用 C++11, 还需要注意配合 <code>[[noreturn]]</code> (一种 attribute specifier) 和 <code>noexcept</code> (一种操作符) 这样的手段控制编译器的优化过程.</p>
 <p>大项目中使用异常抛出的情况不多见, 我个人喜欢用它标记一些致命错误, 或者看作是 Go 中的 <code>panic</code> 来使用, 当然 <code>std::terminate</code> 带来的 <code>std::abort</code> (其实就是 C 标准库中的 <code>abort</code>) 会直接宕掉进程, 并且专用于异常流程, 和 <code>exit</code> 的流程不同.</p>
 <h3 id="go-中的-error-类型">4. Go 中的 <code>error</code> 类型</h3>
 <p>Go 中除了 goroutine 的 <code>panic</code> 及其 <code>recover</code> 的捕获, 最经典的当然是 <code>error</code> 类型的使用了.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode go"><code class="sourceCode go"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">package</span> main</a>
-<a class="sourceLine" id="cb9-2" title="2"></a>
-<a class="sourceLine" id="cb9-3" title="3"><span class="kw">import</span> <span class="st">&quot;errors&quot;</span></a>
-<a class="sourceLine" id="cb9-4" title="4"></a>
-<a class="sourceLine" id="cb9-5" title="5"><span class="kw">func</span> Foo() <span class="dt">error</span> {</a>
-<a class="sourceLine" id="cb9-6" title="6">    <span class="kw">return</span> errors.New(<span class="st">&quot;oops&quot;</span>)</a>
-<a class="sourceLine" id="cb9-7" title="7">}</a>
-<a class="sourceLine" id="cb9-8" title="8"></a>
-<a class="sourceLine" id="cb9-9" title="9"><span class="kw">func</span> main() {</a>
-<a class="sourceLine" id="cb9-10" title="10">    <span class="kw">if</span> err := Foo(); err != <span class="ot">nil</span> {</a>
-<a class="sourceLine" id="cb9-11" title="11">        <span class="bu">panic</span>(err)</a>
-<a class="sourceLine" id="cb9-12" title="12">    }</a>
-<a class="sourceLine" id="cb9-13" title="13">}</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">package</span> main</span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">import</span> <span class="st">&quot;errors&quot;</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="kw">func</span> Foo() <span class="dt">error</span> {</span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="kw">return</span> errors.New(<span class="st">&quot;oops&quot;</span>)</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="kw">func</span> main() {</span>
+<span id="cb9-10"><a href="#cb9-10"></a>    <span class="kw">if</span> err := Foo(); err != <span class="ot">nil</span> {</span>
+<span id="cb9-11"><a href="#cb9-11"></a>        <span class="bu">panic</span>(err)</span>
+<span id="cb9-12"><a href="#cb9-12"></a>    }</span>
+<span id="cb9-13"><a href="#cb9-13"></a>}</span></code></pre></div>
 <p>很容易理解没错, 但是这个 <code>error</code> 类型的用法难道不像 Maybe 吗? 试问下自己, 它是为什么可以和所谓 <code>nil</code> 进行比较判断的呢? 难道它是一个指针吗? 其实并不然, 查阅文档就能发现其实 <code>error</code> 的本质是一个 <code>interface</code>, 而此类型在 Go 中是允许 nil 值的, 所以和指针等概念并没有本质联系.</p>
 <h3 id="pythonlua-等脚本语言的效仿">5. Python/Lua 等脚本语言的效仿</h3>
 <p>Python 和 Lua 或其他的脚本语言虽然各有各的错误处理方法, 但是因为弱类型的特性, 完全可以模仿 Go 的风格去做调用规范, 比如以下 Lua 代码:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">local</span> <span class="kw">function</span> foo<span class="op">()</span></a>
-<a class="sourceLine" id="cb10-2" title="2">  <span class="co">-- 第一个为数据, 第二个为错误信息.</span></a>
-<a class="sourceLine" id="cb10-3" title="3">  <span class="cf">return</span> <span class="dv">42</span><span class="op">,</span> <span class="kw">nil</span></a>
-<a class="sourceLine" id="cb10-4" title="4"><span class="cf">end</span></a>
-<a class="sourceLine" id="cb10-5" title="5"></a>
-<a class="sourceLine" id="cb10-6" title="6"><span class="kw">local</span> <span class="kw">function</span> bar<span class="op">()</span></a>
-<a class="sourceLine" id="cb10-7" title="7">  <span class="co">-- 忽略返回值, 返回一个错误.</span></a>
-<a class="sourceLine" id="cb10-8" title="8">  <span class="kw">local</span> <span class="cn">_</span><span class="op">,</span> <span class="cn">_</span> <span class="op">=</span> foo<span class="op">()</span></a>
-<a class="sourceLine" id="cb10-9" title="9">  <span class="cf">return</span> <span class="kw">nil</span><span class="op">,</span> <span class="st">&quot;oops&quot;</span></a>
-<a class="sourceLine" id="cb10-10" title="10"><span class="cf">end</span></a>
-<a class="sourceLine" id="cb10-11" title="11"></a>
-<a class="sourceLine" id="cb10-12" title="12"><span class="co">-- 类似 Go 的风格.</span></a>
-<a class="sourceLine" id="cb10-13" title="13"><span class="kw">local</span> val<span class="op">,</span> err <span class="op">=</span> bar<span class="op">()</span></a>
-<a class="sourceLine" id="cb10-14" title="14"><span class="cf">if</span> val <span class="op">==</span> <span class="kw">nil</span> <span class="cf">then</span></a>
-<a class="sourceLine" id="cb10-15" title="15">  <span class="fu">error</span><span class="op">(</span>err<span class="op">)</span></a>
-<a class="sourceLine" id="cb10-16" title="16"><span class="cf">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">local</span> <span class="kw">function</span> foo<span class="op">()</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="co">-- 第一个为数据, 第二个为错误信息.</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="cf">return</span> <span class="dv">42</span><span class="op">,</span> <span class="kw">nil</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="kw">end</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="kw">local</span> <span class="kw">function</span> bar<span class="op">()</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>  <span class="co">-- 忽略返回值, 返回一个错误.</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>  <span class="kw">local</span> <span class="cn">_</span><span class="op">,</span> <span class="cn">_</span> <span class="op">=</span> foo<span class="op">()</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>  <span class="cf">return</span> <span class="kw">nil</span><span class="op">,</span> <span class="st">&quot;oops&quot;</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="kw">end</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a></span>
+<span id="cb10-12"><a href="#cb10-12"></a><span class="co">-- 类似 Go 的风格.</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a><span class="kw">local</span> val<span class="op">,</span> err <span class="op">=</span> bar<span class="op">()</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a><span class="cf">if</span> val <span class="op">==</span> <span class="kw">nil</span> <span class="cf">then</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>  <span class="fu">error</span><span class="op">(</span>err<span class="op">)</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a><span class="cf">end</span></span></code></pre></div>
 <p>当然, 看着像是像, 但是和 <code>error</code> 包裹错误信息字符串, 本身可表示 nil 值的特性是完全不同的, 这样的做法把已经把两者撕裂了.</p>
 <h3 id="rust-的-stdoptionoption">6. Rust 的 <code>std::option::Option</code></h3>
 <p>Rust 的这一种数据类型其实就是给 <code>maybe&lt;T&gt;</code> 中的 <code>T</code> 赋予了模式匹配的自由.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">fn</span> foo(v: <span class="dt">Option</span>&lt;<span class="dt">i32</span>&gt;) <span class="op">{</span></a>
-<a class="sourceLine" id="cb11-2" title="2">    <span class="kw">match</span> v <span class="op">{</span></a>
-<a class="sourceLine" id="cb11-3" title="3">        <span class="co">// 类似 Just 42, 只要 42 的情况.</span></a>
-<a class="sourceLine" id="cb11-4" title="4">        <span class="cn">Some</span>(<span class="dv">42</span>) =&gt; <span class="pp">println!</span>(<span class="st">&quot;ok luvin it&quot;</span>),</a>
-<a class="sourceLine" id="cb11-5" title="5">        <span class="co">// 其他 i32 值的情况.</span></a>
-<a class="sourceLine" id="cb11-6" title="6">        <span class="cn">Some</span>(_) =&gt; <span class="pp">println!</span>(<span class="st">&quot;ok tho&quot;</span>),</a>
-<a class="sourceLine" id="cb11-7" title="7">        <span class="co">// 类似 Nothing.</span></a>
-<a class="sourceLine" id="cb11-8" title="8">        <span class="cn">None</span> =&gt; <span class="pp">eprintln!</span>(<span class="st">&quot;oops&quot;</span>)</a>
-<a class="sourceLine" id="cb11-9" title="9">    <span class="op">}</span></a>
-<a class="sourceLine" id="cb11-10" title="10"><span class="op">}</span></a>
-<a class="sourceLine" id="cb11-11" title="11"></a>
-<a class="sourceLine" id="cb11-12" title="12"><span class="kw">fn</span> main() <span class="op">{</span></a>
-<a class="sourceLine" id="cb11-13" title="13">    foo(<span class="cn">None</span>);</a>
-<a class="sourceLine" id="cb11-14" title="14"><span class="op">}</span></a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">fn</span> foo(v<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">i32</span><span class="op">&gt;</span>) <span class="op">{</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>    <span class="kw">match</span> v <span class="op">{</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>        <span class="co">// 类似 Just 42, 只要 42 的情况.</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>        <span class="cn">Some</span>(<span class="dv">42</span>) <span class="op">=&gt;</span> <span class="pp">println!</span>(<span class="st">&quot;ok luvin it&quot;</span>)<span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a>        <span class="co">// 其他 i32 值的情况.</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a>        <span class="cn">Some</span>(_) <span class="op">=&gt;</span> <span class="pp">println!</span>(<span class="st">&quot;ok tho&quot;</span>)<span class="op">,</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a>        <span class="co">// 类似 Nothing.</span></span>
+<span id="cb11-8"><a href="#cb11-8"></a>        <span class="cn">None</span> <span class="op">=&gt;</span> <span class="pp">eprintln!</span>(<span class="st">&quot;oops&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    <span class="op">}</span></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="op">}</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a></span>
+<span id="cb11-12"><a href="#cb11-12"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb11-13"><a href="#cb11-13"></a>    foo(<span class="cn">None</span>)<span class="op">;</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a><span class="op">}</span></span></code></pre></div>
 <p><code>unwrap</code> 和 <code>expect</code> 也非常常用, 两者的用方法都是在 <code>Option</code> 变量为 <em>非 <code>None</code></em> 的情况下将其从 <code>Some(v)</code> 中取出, 如果是 <code>None</code> 则会 panic.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode rust"><code class="sourceCode rust"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">fn</span> main() <span class="op">{</span></a>
-<a class="sourceLine" id="cb12-2" title="2">    <span class="kw">let</span> x: <span class="dt">Option</span>&lt;<span class="dt">i32</span>&gt; = <span class="cn">None</span>;</a>
-<a class="sourceLine" id="cb12-3" title="3">    x.unwrap();         <span class="co">// panics, 但是没有自定义的错误信息</span></a>
-<a class="sourceLine" id="cb12-4" title="4">    x.expect(<span class="st">&quot;oops&quot;</span>);   <span class="co">// panics, 自定义的错误信息为 &quot;oops&quot;</span></a>
-<a class="sourceLine" id="cb12-5" title="5"><span class="op">}</span></a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>    <span class="kw">let</span> x<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="cn">None</span><span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>    x<span class="op">.</span>unwrap()<span class="op">;</span>         <span class="co">// panics, 但是没有自定义的错误信息</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>    x<span class="op">.</span>expect(<span class="st">&quot;oops&quot;</span>)<span class="op">;</span>   <span class="co">// panics, 自定义的错误信息为 &quot;oops&quot;</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="op">}</span></span></code></pre></div>
 <h3 id="结论">结论</h3>
 <p>Maybe 即可以简单地为程序提供安全的错误处理, 又能类似 Go 语言那样封装一个 <code>error</code> 类型来处理错误, 当然在 C++ 里可能得配合 <code>std::tuple</code> 和其参数 打包/解包 的使用, 总之有很多种用处. 而在年龄稍老的动态语言里, 以及 Go, Rust 这样的年轻语言里, 我们都能看到类似 Maybe 的错误处理方法, 从使用和可读性上都有一定的优势, 虽然没有 <code>int</code> 返回那样的高效 (相当于会有许多碎片化的结构体在 caller/callee 中传递), 但是如果有高效的 runtime 支持, 以及在注重 scalability 的大项目中严格规范, 我想是能在 C++ 中获得良好的系统内外的回报的.</p>
 <blockquote>

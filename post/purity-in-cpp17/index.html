@@ -43,100 +43,100 @@
 <p>不过自己的探索过程很混乱, 也几乎忘了自己做了什么阶段性的进步了 (勉强有几次 git 提交历史), 我会记录印象深的为主. 另外, 我认为我所完成的只能算 <em>pseudo</em>-purity, 也就是假装的 :). pure 程度有多深, 除了需要研读 C++ 标准以外, 还要加以 <em>FP</em> 的理论支持, 这会是一个很大的课题.</p>
 <h3 id="理想中的用户函数">理想中的用户函数</h3>
 <p>理想中的用户函数其实很简单, 就是希望 <em>强制</em> 用户使用 <code>constexpr</code> <em>specifier</em> (保留英文是要强调它是个 specifier, 不是数据类型和参数类型的一部分, 而 <code>const</code> 是一个 <em>qualifier</em>, 所以强调英文是必要的).</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">// 以下的代码都将遵守 C++17 标准.</span></a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="dt">int</span> i = <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="co">// C++14 后返回值可直接声明 auto.</span></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="kw">constexpr</span> <span class="kw">auto</span></a>
-<a class="sourceLine" id="cb2-7" title="7">foo(<span class="kw">auto</span> n)</a>
-<a class="sourceLine" id="cb2-8" title="8">{</a>
-<a class="sourceLine" id="cb2-9" title="9">    <span class="co">// 我的最初理想中, 认为 n 可以 copy 进入函数.</span></a>
-<a class="sourceLine" id="cb2-10" title="10"></a>
-<a class="sourceLine" id="cb2-11" title="11">    <span class="co">// 不能有类似以下的副作用.</span></a>
-<a class="sourceLine" id="cb2-12" title="12">    <span class="co">// ++i;</span></a>
-<a class="sourceLine" id="cb2-13" title="13"></a>
-<a class="sourceLine" id="cb2-14" title="14">    <span class="cf">return</span> n;</a>
-<a class="sourceLine" id="cb2-15" title="15">}</a>
-<a class="sourceLine" id="cb2-16" title="16"></a>
-<a class="sourceLine" id="cb2-17" title="17"><span class="co">// 到时经由返回类型 T 和参数类型 Args 传入给一个类, 这个类中使用静态的函数</span></a>
-<a class="sourceLine" id="cb2-18" title="18"><span class="co">// wrapper, 比如 `std::function&#39;, 封装用户的函数, 然后等待用户显式地调用它.</span></a>
-<a class="sourceLine" id="cb2-19" title="19"><span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> ...Args&gt;</a>
-<a class="sourceLine" id="cb2-20" title="20"><span class="kw">class</span> pure_io {};</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">// 以下的代码都将遵守 C++17 标准.</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="dt">int</span> i = <span class="dv">0</span>;</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co">// C++14 后返回值可直接声明 auto.</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">constexpr</span> <span class="kw">auto</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>foo(<span class="kw">auto</span> n)</span>
+<span id="cb2-8"><a href="#cb2-8"></a>{</span>
+<span id="cb2-9"><a href="#cb2-9"></a>    <span class="co">// 我的最初理想中, 认为 n 可以 copy 进入函数.</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a></span>
+<span id="cb2-11"><a href="#cb2-11"></a>    <span class="co">// 不能有类似以下的副作用.</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>    <span class="co">// ++i;</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="cf">return</span> n;</span>
+<span id="cb2-15"><a href="#cb2-15"></a>}</span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="co">// 到时经由返回类型 T 和参数类型 Args 传入给一个类, 这个类中使用静态的函数</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a><span class="co">// wrapper, 比如 `std::function&#39;, 封装用户的函数, 然后等待用户显式地调用它.</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> ...Args&gt;</span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="kw">class</span> pure_io {};</span></code></pre></div>
 <p>当然, 最初的想法是很 naive 的...</p>
 <h3 id="理想中的-capture-by-copy-lambda-表达式">理想中的 <em>capture by copy</em> lambda 表达式</h3>
 <p>那么既然如此, 根据这个理想状况, 一个捕捉 <code>[=]</code> (copy 方式) 的 lambda 表达式也应该符合类似 <code>foo</code> 的设定 (吧?).</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="co">// 全局中不可使用 `=&#39; 捕捉.</span></a>
-<a class="sourceLine" id="cb3-2" title="2"><span class="kw">auto</span> foo = [](<span class="kw">auto</span> n) {</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="cf">return</span> n;</a>
-<a class="sourceLine" id="cb3-4" title="4">};</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">// 全局中不可使用 `=&#39; 捕捉.</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">auto</span> foo = [](<span class="kw">auto</span> n) {</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="cf">return</span> n;</span>
+<span id="cb3-4"><a href="#cb3-4"></a>};</span></code></pre></div>
 <p>但是这里要提前说明一个问题, 就是 lambda 表达式的类型是否能保存, 并用于匹配其他的 lambda 表达式呢? 因为我在想是否能通过此方法限定用户 lambda 表达式的 (参数和返回值的) 类型. 我们知道 lambda 表达式是 <em>匿名</em> 的, 果不其然, C++11 中 lambda 表达式的类型是 <em>unutterable</em> 的 (中文翻译无力...), 比如这个例子:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb4-2" title="2">main()</a>
-<a class="sourceLine" id="cb4-3" title="3">{</a>
-<a class="sourceLine" id="cb4-4" title="4">    <span class="kw">auto</span> a = [] {};</a>
-<a class="sourceLine" id="cb4-5" title="5">    <span class="kw">auto</span> b = [] {};</a>
-<a class="sourceLine" id="cb4-6" title="6">    <span class="co">// 编译期断言成功.</span></a>
-<a class="sourceLine" id="cb4-7" title="7">    <span class="kw">static_assert</span>(!<span class="bu">std::</span>is_same&lt;<span class="kw">decltype</span>(a), <span class="kw">decltype</span>(b)&gt;(), <span class="st">&quot;unutterable&quot;</span>);</a>
-<a class="sourceLine" id="cb4-8" title="8">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb4-9" title="9">}</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="dt">int</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>main()</span>
+<span id="cb4-3"><a href="#cb4-3"></a>{</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="kw">auto</span> a = [] {};</span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="kw">auto</span> b = [] {};</span>
+<span id="cb4-6"><a href="#cb4-6"></a>    <span class="co">// 编译期断言成功.</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="kw">static_assert</span>(!<span class="bu">std::</span>is_same&lt;<span class="kw">decltype</span>(a), <span class="kw">decltype</span>(b)&gt;(), <span class="st">&quot;unutterable&quot;</span>);</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb4-9"><a href="#cb4-9"></a>}</span></code></pre></div>
 <p>所以尝试把 <code>[=]</code> 作为类型的一部分是不可行的, 但先剧透一下, 好在 C++17 中 lambda 表达式已经是 <em>core constant expressions</em> 的一部分, 所以 lambda 表达式的 <em>eval</em> 由编译期来操作是可行的.</p>
 <h3 id="stdfunction-的局限性"><code>std::function</code> 的局限性</h3>
 <p>刚刚提到在使用 <code>template</code> 的参数限定如 返回值类型/参数类型 后再装入 <code>std::function</code>, 当然是有原因的, 之前也提过 <code>constexpr</code> 是一个 specifier, 以 copy 形式让 <code>std::function</code> 作为参数类型接收 <em>address of overloaded function</em> (如函数名作为赋值表达式的 <em>rhs</em>) 和 lambda 表达式是无法限制函数的 purity 的, 在此就不举例了唔. 具体 <code>std::function</code> 在 compile-time/runtime 是怎么存活的, 恐怕需要读编译器源码而不是文档啦 (大坑是也).</p>
 <h3 id="用-crtp-接受无副作用函数-非标准">用 <em>CRTP</em> 接受无副作用函数 (非标准)</h3>
 <p>现在的问题, 是还有什么办法接受用户的函数呢? 第一个点子当然就是 <em>polymorphism</em>, 当然以 <code>virtual</code> 为核心的 <em>dynamic polymorphism</em> 想都不用想. 尝试 <em>static polymorphism</em> 有好几种方法, 比如 <em>macros</em>, <code>template</code> 等等, macros 需要面对 <em>sanitization</em> (即用户输入处理) 的问题, 而大玄学 <em>template metaprogramming</em> 可以先放一放, 我的第一反应其实是先尝试 <em>CRTP</em> (<em>curiously recurring template pattern</em>), 写起来大概长这样:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="dt">int</span> i = <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb5-2" title="2"></a>
-<a class="sourceLine" id="cb5-3" title="3"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb5-4" title="4"><span class="kw">class</span> pure_io {</a>
-<a class="sourceLine" id="cb5-5" title="5"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-6" title="6">    <span class="co">// 能用上的 specifier 都用上...</span></a>
-<a class="sourceLine" id="cb5-7" title="7">    <span class="kw">constexpr</span> <span class="dt">void</span></a>
-<a class="sourceLine" id="cb5-8" title="8">    run() <span class="at">const</span> <span class="kw">noexcept</span></a>
-<a class="sourceLine" id="cb5-9" title="9">    {</a>
-<a class="sourceLine" id="cb5-10" title="10">        <span class="co">// 编译期 cast 成子类指针并保证没有修改, 然后执行子类的实现.</span></a>
-<a class="sourceLine" id="cb5-11" title="11">        <span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>)-&gt;run_impl();</a>
-<a class="sourceLine" id="cb5-12" title="12">    }</a>
-<a class="sourceLine" id="cb5-13" title="13">};</a>
-<a class="sourceLine" id="cb5-14" title="14"></a>
-<a class="sourceLine" id="cb5-15" title="15"><span class="co">// 通过 template 将子类传给父类.</span></a>
-<a class="sourceLine" id="cb5-16" title="16"><span class="kw">class</span> pure_io_impl : <span class="kw">public</span> pure_io&lt;pure_io_impl&gt; {</a>
-<a class="sourceLine" id="cb5-17" title="17"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-18" title="18">    <span class="co">// 实现 run 方法.  这里皮了一下使用 `const&#39; qualifier 防止修改类成员变量,</span></a>
-<a class="sourceLine" id="cb5-19" title="19">    <span class="co">// 而实际还存在副作用.</span></a>
-<a class="sourceLine" id="cb5-20" title="20">    <span class="dt">void</span></a>
-<a class="sourceLine" id="cb5-21" title="21">    run_impl() <span class="at">const</span></a>
-<a class="sourceLine" id="cb5-22" title="22">    {</a>
-<a class="sourceLine" id="cb5-23" title="23">        <span class="co">// 副作用语句.</span></a>
-<a class="sourceLine" id="cb5-24" title="24">        ++i;</a>
-<a class="sourceLine" id="cb5-25" title="25">    }</a>
-<a class="sourceLine" id="cb5-26" title="26">};</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="dt">int</span> i = <span class="dv">0</span>;</span>
+<span id="cb5-2"><a href="#cb5-2"></a></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">class</span> pure_io {</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">public</span>:</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="co">// 能用上的 specifier 都用上...</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>    <span class="kw">constexpr</span> <span class="dt">void</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>    run() <span class="at">const</span> <span class="kw">noexcept</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>    {</span>
+<span id="cb5-10"><a href="#cb5-10"></a>        <span class="co">// 编译期 cast 成子类指针并保证没有修改, 然后执行子类的实现.</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>        <span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>)-&gt;run_impl();</span>
+<span id="cb5-12"><a href="#cb5-12"></a>    }</span>
+<span id="cb5-13"><a href="#cb5-13"></a>};</span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co">// 通过 template 将子类传给父类.</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="kw">class</span> pure_io_impl : <span class="kw">public</span> pure_io&lt;pure_io_impl&gt; {</span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="kw">public</span>:</span>
+<span id="cb5-18"><a href="#cb5-18"></a>    <span class="co">// 实现 run 方法.  这里皮了一下使用 `const&#39; qualifier 防止修改类成员变量,</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a>    <span class="co">// 而实际还存在副作用.</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a>    <span class="dt">void</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>    run_impl() <span class="at">const</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a>    {</span>
+<span id="cb5-23"><a href="#cb5-23"></a>        <span class="co">// 副作用语句.</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a>        ++i;</span>
+<span id="cb5-25"><a href="#cb5-25"></a>    }</span>
+<span id="cb5-26"><a href="#cb5-26"></a>};</span></code></pre></div>
 <p>但即使标注了 <code>constexpr</code>, 含有副作用的 <code>pure_io_impl::run_impl</code> 还是能够执行. 在查找了相当的文档之后, 我发现了 GCC 提供的两个 <em>function attributes</em>, <code>pure</code> 和 <code>const</code>, 有趣的是前者的强度并不比后者高. <code>const</code> 属性保证了该函数不存在副作用, 如使用了全局的变量, 该属性可以保证在函数内有一个本地的拷贝, 但缺点也很明显, 它 <em>并不能</em> 在编译期提醒用户的函数有副作用的存在, 并且也使代码失去了 <em>可移植性</em>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="pp">#include </span><span class="im">&lt;cassert&gt;</span></a>
-<a class="sourceLine" id="cb6-2" title="2"></a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="dt">int</span> i = <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb6-4" title="4"></a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb6-6" title="6"><span class="kw">class</span> pure_io {</a>
-<a class="sourceLine" id="cb6-7" title="7"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb6-8" title="8">    <span class="co">// 此属性只能在 GCC 中使用.</span></a>
-<a class="sourceLine" id="cb6-9" title="9">    <span class="kw">constexpr</span> <span class="dt">void</span></a>
-<a class="sourceLine" id="cb6-10" title="10">    run() <span class="at">const</span> <span class="kw">noexcept</span> __attribute__((<span class="at">const</span>))</a>
-<a class="sourceLine" id="cb6-11" title="11">    {</a>
-<a class="sourceLine" id="cb6-12" title="12">        <span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>)-&gt;run_impl();</a>
-<a class="sourceLine" id="cb6-13" title="13">    }</a>
-<a class="sourceLine" id="cb6-14" title="14">};</a>
-<a class="sourceLine" id="cb6-15" title="15"></a>
-<a class="sourceLine" id="cb6-16" title="16"><span class="kw">class</span> pure_io_impl : <span class="kw">public</span> pure_io&lt;pure_io_impl&gt; {</a>
-<a class="sourceLine" id="cb6-17" title="17"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb6-18" title="18">    <span class="dt">void</span></a>
-<a class="sourceLine" id="cb6-19" title="19">    run_impl() <span class="at">const</span></a>
-<a class="sourceLine" id="cb6-20" title="20">    {</a>
-<a class="sourceLine" id="cb6-21" title="21">        ++i;</a>
-<a class="sourceLine" id="cb6-22" title="22">        <span class="co">// 在 runtime 断言成功.  在此函数之外, `i&#39; 依旧是原始值 0.</span></a>
-<a class="sourceLine" id="cb6-23" title="23">        <span class="ot">assert</span>(i == <span class="dv">1</span>);</a>
-<a class="sourceLine" id="cb6-24" title="24">    }</a>
-<a class="sourceLine" id="cb6-25" title="25">};</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1"></a><span class="pp">#include </span><span class="im">&lt;cassert&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="dt">int</span> i = <span class="dv">0</span>;</span>
+<span id="cb6-4"><a href="#cb6-4"></a></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">class</span> pure_io {</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="kw">public</span>:</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="co">// 此属性只能在 GCC 中使用.</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="kw">constexpr</span> <span class="dt">void</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>    run() <span class="at">const</span> <span class="kw">noexcept</span> __attribute__((<span class="at">const</span>))</span>
+<span id="cb6-11"><a href="#cb6-11"></a>    {</span>
+<span id="cb6-12"><a href="#cb6-12"></a>        <span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>)-&gt;run_impl();</span>
+<span id="cb6-13"><a href="#cb6-13"></a>    }</span>
+<span id="cb6-14"><a href="#cb6-14"></a>};</span>
+<span id="cb6-15"><a href="#cb6-15"></a></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="kw">class</span> pure_io_impl : <span class="kw">public</span> pure_io&lt;pure_io_impl&gt; {</span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="kw">public</span>:</span>
+<span id="cb6-18"><a href="#cb6-18"></a>    <span class="dt">void</span></span>
+<span id="cb6-19"><a href="#cb6-19"></a>    run_impl() <span class="at">const</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a>    {</span>
+<span id="cb6-21"><a href="#cb6-21"></a>        ++i;</span>
+<span id="cb6-22"><a href="#cb6-22"></a>        <span class="co">// 在 runtime 断言成功.  在此函数之外, `i&#39; 依旧是原始值 0.</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a>        <span class="ot">assert</span>(i == <span class="dv">1</span>);</span>
+<span id="cb6-24"><a href="#cb6-24"></a>    }</span>
+<span id="cb6-25"><a href="#cb6-25"></a>};</span></code></pre></div>
 <p>即使决定使用 <code>__attribute__((const))</code> 这个 GCC 的功能来阻止副作用的发生, 怎么接收用户的参数也是个大问题, 并且与 I/O 相关的 syscall 等同样更改状态的调用, 在这个例子中依旧未能被检查, 只好继续探索了.</p>
 <h3 id="逐渐在-template-metaprogramming-的边缘试探">逐渐在 template metaprogramming 的边缘试探</h3>
 <p>至此, 我已经放弃了三个想法, 即:</p>
@@ -157,40 +157,40 @@
 <p>写到这我自己都心累了. 是的, 非常多的编译期特性, 但具体有什么作用呢? 到底适用于什么场景之下呢? 即使这么多眼花缭乱的东西, 看了代码就能马上明白的啦. 延续以上的思路, 我们先处理一般的函数 (即名字代表其地址的这种函数), 再尝试处理 lambda 表达式.</p>
 <h3 id="一般函数的处理-fapply">一般函数的处理: <code>fapply</code></h3>
 <p>结合这些编译期特性后, 我们的代码似乎更加简洁了.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1"><span class="co">// 这种写法即 non-type template parameter, 在 template 参数列表中像声明函数一样,</span></a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="co">// 声明我们的 template 参数, 这里 auto F() 的意思是我们接收一个函数类型的参数 F,</span></a>
-<a class="sourceLine" id="cb7-3" title="3"><span class="co">// 函数 F 不能接受任何参数, 返回值类型由编译器推断.</span></a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="kw">template</span> &lt;<span class="kw">auto</span> F()&gt;</a>
-<a class="sourceLine" id="cb7-5" title="5"><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">auto</span></a>
-<a class="sourceLine" id="cb7-6" title="6">fapply() <span class="kw">noexcept</span></a>
-<a class="sourceLine" id="cb7-7" title="7">{</a>
-<a class="sourceLine" id="cb7-8" title="8">    <span class="co">// `noexcept(F())&#39; 不仅检查函数是否有 noexcept 属性, 而且因为其用于</span></a>
-<a class="sourceLine" id="cb7-9" title="9">    <span class="co">// `static_assert&#39; 之中, 它还帮忙检查了函数的 constant 属性.</span></a>
-<a class="sourceLine" id="cb7-10" title="10">    <span class="kw">static_assert</span>(<span class="kw">noexcept</span>(F()), <span class="st">&quot;constant function required&quot;</span>);</a>
-<a class="sourceLine" id="cb7-11" title="11"></a>
-<a class="sourceLine" id="cb7-12" title="12">    <span class="co">// 我们的函数声明了 constexpr, 所以返回值类型一定是一个 LiteralType,</span></a>
-<a class="sourceLine" id="cb7-13" title="13">    <span class="co">// 而且也不用担心返回 `void` 的情况, 只要外界不要接收 `void` 值即可.</span></a>
-<a class="sourceLine" id="cb7-14" title="14">    <span class="cf">return</span> F();</a>
-<a class="sourceLine" id="cb7-15" title="15">}</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">// 这种写法即 non-type template parameter, 在 template 参数列表中像声明函数一样,</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co">// 声明我们的 template 参数, 这里 auto F() 的意思是我们接收一个函数类型的参数 F,</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">// 函数 F 不能接受任何参数, 返回值类型由编译器推断.</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="kw">template</span> &lt;<span class="kw">auto</span> F()&gt;</span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">auto</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>fapply() <span class="kw">noexcept</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>{</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="co">// `noexcept(F())&#39; 不仅检查函数是否有 noexcept 属性, 而且因为其用于</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="co">// `static_assert&#39; 之中, 它还帮忙检查了函数的 constant 属性.</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>    <span class="kw">static_assert</span>(<span class="kw">noexcept</span>(F()), <span class="st">&quot;constant function required&quot;</span>);</span>
+<span id="cb7-11"><a href="#cb7-11"></a></span>
+<span id="cb7-12"><a href="#cb7-12"></a>    <span class="co">// 我们的函数声明了 constexpr, 所以返回值类型一定是一个 LiteralType,</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>    <span class="co">// 而且也不用担心返回 `void` 的情况, 只要外界不要接收 `void` 值即可.</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a>    <span class="cf">return</span> F();</span>
+<span id="cb7-15"><a href="#cb7-15"></a>}</span></code></pre></div>
 <p>现在, 我们来写一个相加俩参数的用户函数:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="co">// 还是刚才说的, X 和 Y 是两个 non-type template parameter, 类型由编译器推断.</span></a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="kw">template</span> &lt;<span class="kw">auto</span> X, <span class="kw">auto</span> Y&gt;</a>
-<a class="sourceLine" id="cb8-3" title="3"><span class="co">// 必须声明 constexpr, 即使声明了 noexcept 都不行, 因为受到 `static_assert&#39;</span></a>
-<a class="sourceLine" id="cb8-4" title="4"><span class="co">// 的限制.</span></a>
-<a class="sourceLine" id="cb8-5" title="5"><span class="kw">constexpr</span> <span class="kw">auto</span></a>
-<a class="sourceLine" id="cb8-6" title="6"><span class="co">// 函数不能接受参数, 否则也不能通过 `static_assert&#39; 的断言.</span></a>
-<a class="sourceLine" id="cb8-7" title="7">foo()</a>
-<a class="sourceLine" id="cb8-8" title="8">{</a>
-<a class="sourceLine" id="cb8-9" title="9">    <span class="cf">return</span> X + Y;</a>
-<a class="sourceLine" id="cb8-10" title="10">}</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">// 还是刚才说的, X 和 Y 是两个 non-type template parameter, 类型由编译器推断.</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">template</span> &lt;<span class="kw">auto</span> X, <span class="kw">auto</span> Y&gt;</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co">// 必须声明 constexpr, 即使声明了 noexcept 都不行, 因为受到 `static_assert&#39;</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co">// 的限制.</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="kw">constexpr</span> <span class="kw">auto</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co">// 函数不能接受参数, 否则也不能通过 `static_assert&#39; 的断言.</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>foo()</span>
+<span id="cb8-8"><a href="#cb8-8"></a>{</span>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="cf">return</span> X + Y;</span>
+<span id="cb8-10"><a href="#cb8-10"></a>}</span></code></pre></div>
 <p>调用这个 <code>foo</code> 和平常的函数调用也非常类似:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb9-2" title="2">main()</a>
-<a class="sourceLine" id="cb9-3" title="3">{</a>
-<a class="sourceLine" id="cb9-4" title="4">    <span class="kw">auto</span> i = fapply&lt;foo&lt;<span class="dv">0</span>, <span class="dv">42</span>&gt;&gt;(); <span class="co">// i == 42</span></a>
-<a class="sourceLine" id="cb9-5" title="5">    ++i; <span class="co">// 强迫症使用下 i, 否则有编译警告</span></a>
-<a class="sourceLine" id="cb9-6" title="6">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb9-7" title="7">}</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1"></a><span class="dt">int</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>main()</span>
+<span id="cb9-3"><a href="#cb9-3"></a>{</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="kw">auto</span> i = fapply&lt;foo&lt;<span class="dv">0</span>, <span class="dv">42</span>&gt;&gt;(); <span class="co">// i == 42</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>    ++i; <span class="co">// 强迫症使用下 i, 否则有编译警告</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb9-7"><a href="#cb9-7"></a>}</span></code></pre></div>
 <p>按照这种方法, <code>static_assert</code> 和 <code>noexcept</code> 保证了用户必须主动加上 <code>constexpr</code> specifier, 并且用户函数不能有任何参数, 用户便只能尝试使用 non-type template parameter 来处理输入了.</p>
 <h3 id="lambda-表达式的处理-lapply">lambda 表达式的处理: <code>lapply</code></h3>
 <p>处理 lambda 表达式首先要说明两个很关键的点,</p>
@@ -199,42 +199,42 @@
 <li><code>std::tuple</code> 借由上一点提到的 lambda 表达式特性, 可以生成我们需要的 constant 数值, 比如 <code>[] { return std::make_tuple(42); }()</code></li>
 </ol>
 <p>因此, 我设计 <code>lapply</code> 的思路是这样的, 限定它接受两个参数 <code>f</code> 和 <code>g</code>, 两个都是 lambda 表达式, 第一个 <code>f</code> 即正常的用户函数, 第二个 <code>g</code> 是所谓的 <em>argument generator</em>, 就是用于获取 <em>apply</em> 给函数 <code>f</code> 的参数, 并限定 <code>g</code> 不允许接收参数. 讲的如此混乱, 那么先不看 <code>lapply</code> 的代码, 我们先看用户的使用场景吧:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></a>
-<a class="sourceLine" id="cb10-2" title="2"></a>
-<a class="sourceLine" id="cb10-3" title="3"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb10-4" title="4">main()</a>
-<a class="sourceLine" id="cb10-5" title="5">{</a>
-<a class="sourceLine" id="cb10-6" title="6">    <span class="co">// 用户函数.  `auto [n] = t&#39; 术语叫 structured binding declaration,</span></a>
-<a class="sourceLine" id="cb10-7" title="7">    <span class="co">// 类似模式匹配, 取出 t 这个 tuple 的第一个元素.</span></a>
-<a class="sourceLine" id="cb10-8" title="8">    <span class="kw">auto</span> f = [](<span class="kw">auto</span> t) { <span class="kw">auto</span> [n] = t; <span class="cf">return</span> n; };</a>
-<a class="sourceLine" id="cb10-9" title="9"></a>
-<a class="sourceLine" id="cb10-10" title="10">    <span class="co">// 执行用户函数的 argument generator.</span></a>
-<a class="sourceLine" id="cb10-11" title="11">    <span class="kw">auto</span> g = [] { <span class="cf">return</span> <span class="bu">std::</span>make_tuple(<span class="dv">42</span>); };</a>
-<a class="sourceLine" id="cb10-12" title="12"></a>
-<a class="sourceLine" id="cb10-13" title="13">    <span class="co">// template 相关语法都没用上, 因为编译器帮我们推断类型了.</span></a>
-<a class="sourceLine" id="cb10-14" title="14">    <span class="kw">auto</span> i = lapply(f, g);</a>
-<a class="sourceLine" id="cb10-15" title="15">    ++i;</a>
-<a class="sourceLine" id="cb10-16" title="16"></a>
-<a class="sourceLine" id="cb10-17" title="17">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb10-18" title="18">}</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1"></a><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="dt">int</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>main()</span>
+<span id="cb10-5"><a href="#cb10-5"></a>{</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="co">// 用户函数.  `auto [n] = t&#39; 术语叫 structured binding declaration,</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="co">// 类似模式匹配, 取出 t 这个 tuple 的第一个元素.</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="kw">auto</span> f = [](<span class="kw">auto</span> t) { <span class="kw">auto</span> [n] = t; <span class="cf">return</span> n; };</span>
+<span id="cb10-9"><a href="#cb10-9"></a></span>
+<span id="cb10-10"><a href="#cb10-10"></a>    <span class="co">// 执行用户函数的 argument generator.</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a>    <span class="kw">auto</span> g = [] { <span class="cf">return</span> <span class="bu">std::</span>make_tuple(<span class="dv">42</span>); };</span>
+<span id="cb10-12"><a href="#cb10-12"></a></span>
+<span id="cb10-13"><a href="#cb10-13"></a>    <span class="co">// template 相关语法都没用上, 因为编译器帮我们推断类型了.</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>    <span class="kw">auto</span> i = lapply(f, g);</span>
+<span id="cb10-15"><a href="#cb10-15"></a>    ++i;</span>
+<span id="cb10-16"><a href="#cb10-16"></a></span>
+<span id="cb10-17"><a href="#cb10-17"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb10-18"><a href="#cb10-18"></a>}</span></code></pre></div>
 <p>大概的思路就是, <code>lapply</code> 从 <code>g</code> 中获得了 <code>f</code> 需要的 tuple, 然后传给 <code>f</code> 执行, 返回 <code>f</code> 的返回值. 接下来我们就看看 <code>lapply</code> 的声明吧:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb11-1" title="1"><span class="co">// F 和 G 两个类型可以由编译器推断出来.</span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> G&gt;</a>
-<a class="sourceLine" id="cb11-3" title="3"><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">auto</span></a>
-<a class="sourceLine" id="cb11-4" title="4">lapply(F f, G g) <span class="kw">noexcept</span></a>
-<a class="sourceLine" id="cb11-5" title="5">{</a>
-<a class="sourceLine" id="cb11-6" title="6">    <span class="co">// 我们检查 g 是不是 constant 的, 并且它不能接受参数.</span></a>
-<a class="sourceLine" id="cb11-7" title="7">    <span class="kw">static_assert</span>(<span class="kw">noexcept</span>(g()), <span class="st">&quot;no-param lambda required at arg#1&quot;</span>);</a>
-<a class="sourceLine" id="cb11-8" title="8"></a>
-<a class="sourceLine" id="cb11-9" title="9">    <span class="co">// 用 `std::is_same&#39; 检查 g 的返回值是不是 void, 如果是的话不能直接传给 f,</span></a>
-<a class="sourceLine" id="cb11-10" title="10">    <span class="co">// 否则会产生 invalid use of void expression 的错误.</span></a>
-<a class="sourceLine" id="cb11-11" title="11">    <span class="co">// `else&#39; 分支不能在 `if constexpr&#39; 中省略.</span></a>
-<a class="sourceLine" id="cb11-12" title="12">    <span class="cf">if</span> <span class="kw">constexpr</span> (<span class="bu">std::</span>is_same&lt;<span class="kw">decltype</span>(g()), <span class="dt">void</span>&gt;::value) {</a>
-<a class="sourceLine" id="cb11-13" title="13">        <span class="cf">return</span> f();</a>
-<a class="sourceLine" id="cb11-14" title="14">    <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb11-15" title="15">        <span class="cf">return</span> f(g());</a>
-<a class="sourceLine" id="cb11-16" title="16">    }</a>
-<a class="sourceLine" id="cb11-17" title="17">}</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">// F 和 G 两个类型可以由编译器推断出来.</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> G&gt;</span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">auto</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>lapply(F f, G g) <span class="kw">noexcept</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a>{</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    <span class="co">// 我们检查 g 是不是 constant 的, 并且它不能接受参数.</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a>    <span class="kw">static_assert</span>(<span class="kw">noexcept</span>(g()), <span class="st">&quot;no-param lambda required at arg#1&quot;</span>);</span>
+<span id="cb11-8"><a href="#cb11-8"></a></span>
+<span id="cb11-9"><a href="#cb11-9"></a>    <span class="co">// 用 `std::is_same&#39; 检查 g 的返回值是不是 void, 如果是的话不能直接传给 f,</span></span>
+<span id="cb11-10"><a href="#cb11-10"></a>    <span class="co">// 否则会产生 invalid use of void expression 的错误.</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a>    <span class="co">// `else&#39; 分支不能在 `if constexpr&#39; 中省略.</span></span>
+<span id="cb11-12"><a href="#cb11-12"></a>    <span class="cf">if</span> <span class="kw">constexpr</span> (<span class="bu">std::</span>is_same&lt;<span class="kw">decltype</span>(g()), <span class="dt">void</span>&gt;::value) {</span>
+<span id="cb11-13"><a href="#cb11-13"></a>        <span class="cf">return</span> f();</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    <span class="cf">else</span> {</span>
+<span id="cb11-15"><a href="#cb11-15"></a>        <span class="cf">return</span> f(g());</span>
+<span id="cb11-16"><a href="#cb11-16"></a>    }</span>
+<span id="cb11-17"><a href="#cb11-17"></a>}</span></code></pre></div>
 <p>更多的 <em>test cases</em> 和可用的接口可以参考我的 <a href="https://github.com/anqurvanillapy/cppl/blob/master/mem/purity1z.cc">完整代码</a>.</p>
 <h3 id="nailed-it-达到预期效果">Nailed it! 达到预期效果!</h3>
 <p>不过这个东西能够用来做什么呢? 我理想中的 <em>use case</em> 就是将其封装在一个静态类中, 关于 STM 的操作必须围绕它来执行, 相当于论文那样分割了 有/无 副作用的两个世界, 如果能最后完成 STM 的算法和抽象, 就可以大胆尝试去优化之前的 lock-free bounded MPMC queue 的代码风格了 (当然还得考察一下 <code>&lt;atomic&gt;</code> 各种调用的 purity, 不然就白折腾那么多东西了).</p>
