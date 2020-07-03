@@ -5,7 +5,11 @@ from pathlib import Path
 # Why not `asyncio`?  You are thinking peach!  That's not parallelism!
 from multiprocessing import Process, JoinableQueue, Lock, Value
 
-_INPUT_PATHS = [Path("."), *Path("post").iterdir()]
+_INPUT_PATHS = [
+    Path("."),
+    *Path("post").iterdir(),
+    *(Path("post") / "legacy").iterdir(),
+]
 
 
 def collector(pending_items, lock, total, is_force):
