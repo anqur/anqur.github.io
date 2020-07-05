@@ -16,7 +16,8 @@ $$
   \Gamma \ ctx
   \qquad
   \Gamma \vdash A \ type
-  \qquad \Gamma, x : A \vdash B(x) \  type
+  \qquad
+  \Gamma, x : A \vdash B(x) \  type
   \qquad
   \Gamma, x : A \vdash b(x) : B(x)
 }
@@ -35,7 +36,7 @@ $$
   \qquad
   \Gamma \vdash p : \Sigma_{x : A} B(x)
 }
-{\Gamma \vdash fst_{(x : A) * B(x)}(p) : A}
+{\Gamma \vdash p.1 : A}
 \\
 ~
 \\
@@ -44,11 +45,12 @@ $$
   \Gamma \ ctx
   \qquad
   \Gamma \vdash A \ type
-  \qquad \Gamma, x : A \vdash B(x) \  type
+  \qquad
+  \Gamma, x : A \vdash B(x) \  type
   \qquad
   \Gamma \vdash p : \Sigma_{x : A} B(x)
 }
-{\Gamma \vdash snd_{(x : A) * B(x)}(p) : B(x)}
+{\Gamma \vdash p.2 : B(x)}
 \\
 ~
 \\
@@ -59,15 +61,16 @@ $$
   \Gamma \ ctx
   \qquad
   \Gamma \vdash A \ type
-  \qquad \Gamma, x : A \vdash B(x) \  type
+  \qquad
+  \Gamma, x : A \vdash B(x) \  type
   \qquad
   \Gamma \vdash a : A
   \qquad
   \Gamma \vdash b(a) : B(a)
   \qquad
-  \Gamma \vdash (a, b(a)) : \Sigma_{x : A} B(x)
+  \Gamma \vdash p_{(a, b(a))} : \Sigma_{x : A} B(x)
 }
-{\Gamma \vdash fst_{(x : A) * B(x)}(p) \equiv a : A}
+{\Gamma \vdash p.1 \equiv a : A}
 \\
 ~
 \\
@@ -76,13 +79,30 @@ $$
   \Gamma \ ctx
   \qquad
   \Gamma \vdash A \ type
-  \qquad \Gamma, x : A \vdash B(x) \  type
+  \qquad
+  \Gamma, x : A \vdash B(x) \  type
   \qquad
   \Gamma \vdash a : A
   \qquad
   \Gamma \vdash b(a) : B(a)
   \qquad
-  \Gamma \vdash (a, b(a)) : \Sigma_{x : A} B(x)
+  \Gamma \vdash p_{(a, b(a))} : \Sigma_{x : A} B(x)
 }
-{\Gamma \vdash snd_{(x : A) * B(x)}(p) \equiv b(a) : B(a)}
+{\Gamma \vdash p.2 \equiv b(a) : B(a)}
+\\
+~
+\\
+\mathrm{\tiny DEPENDENT\ COPRODUCT\ UNIQUENESS}
+\\
+\frac
+{
+  \Gamma \ ctx
+  \qquad
+  \Gamma \vdash A \ type
+  \qquad
+  \Gamma, x : A \vdash B(x) \  type
+  \qquad
+  \Gamma \vdash p : \Sigma_{x : A} B(x)
+}
+{\Gamma \vdash p \equiv (p.1, p.2) : \Sigma_{x : A} B(x)}
 $$
