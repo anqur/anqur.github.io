@@ -12,8 +12,8 @@ _INPUT_PATHS = [
 ]
 
 
-def collector(pending_items, lock, total, is_force):
-    for post in _INPUT_PATHS:
+def collector(input_paths, pending_items, lock, total, is_force):
+    for post in input_paths:
         if not post.is_dir():
             continue
 
@@ -62,6 +62,7 @@ def main():
     p.add_argument(
         "--jobs", "-j", type=int, default=4, help="Number of jobs",
     )
+    p.add_argument("--input-path", "-i", help="A single path as input")
 
     args = p.parse_args()
 
@@ -69,12 +70,14 @@ def main():
     with open(Path("scripts") / "template.html") as f:
         tmpl = f.read()
 
+    input_paths = [Path(args.input_path)] if args.input_path else _INPUT_PATHS
     pending_items = JoinableQueue()
     lock = Lock()
     done, total = Value("i", 0), Value("i", 0)
 
     coll = Process(
-        target=collector, args=(pending_items, lock, total, args.force)
+        target=collector,
+        args=(input_paths, pending_items, lock, total, args.force),
     )
     gens = [
         Process(

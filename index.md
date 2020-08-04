@@ -2,7 +2,8 @@ Blog of [Anqur](//github.com/anqurvanillapy).
 
 ## Contents
 
-0. [Notes about Notes: OKTT](post/20200703-oktt-notes) (WIP)
+1. [Notes about Notes: OKTT](post/20200703-oktt-notes) (WIP)
+1. [Transcript: ∞-Category Theory for Undergraduates](post/20200804-oo-cat-transcript) (WIP)
 
 <details>
 <summary>Legacy Posts</summary>

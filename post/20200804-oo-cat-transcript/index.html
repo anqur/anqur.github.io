@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>tl;dw | Anqur</title>
+  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/scripts/highlight.css">
+</head>
+
+<body>
+  <header>
+    <h1><a href="/">tl;dw</a></h1>
+  </header>
+
+  <main>
+    <article><h1 id="transcript--category-theory-for-undergraduates">Transcript: ∞-Category Theory for Undergraduates</h1>
+<blockquote>
+<p>This is the transcript of the <a href="http://www.math.jhu.edu/~eriehl/berkeley-logic.pdf">slides</a> from Emily Riehl's talk <em>∞-Category Theory for Undergraduates</em> (<a href="http://www.math.jhu.edu/~eriehl/berkeley-logic.mp4">video</a>), which is absolutely a great introduction to modern type theory and mathematics.</p>
+</blockquote>
+<ul>
+<li>Berkeley Logic Colloquium</li>
+<li>Emily Riehl</li>
+<li>7 May 2020</li>
+</ul>
+<p>Thesis: If future undergraduates' foundational understanding of mathematical proof were based on Homotopy Type Theory (HoTT) then we could teach them ∞-category theory - much as we teach today's undergraduates abstract algebra.</p>
+<ol type="1">
+<li>ACT I: Undergraduate-level informal HoTT</li>
+<li>ACT II: ∞-category theory</li>
+</ol>
+<h2 id="act-i-undergraduate-level-informal-hott">ACT I: Undergraduate-level informal HoTT</h2>
+<p><em>Dependant type theory</em> is a formal system of inference rules, that combine to form derivations. There are four kinds of "well-formed formulas" called <em>judgements</em>, including:</p>
+<ul>
+<li><span class="math inline">\(\Gamma \vdash A \  type\)</span> - "<span class="math inline">\(A\)</span> is a type"</li>
+<li><span class="math inline">\(\Gamma \vdash a : A\)</span> - "<span class="math inline">\(a\)</span> is a term of type <span class="math inline">\(A\)</span>"</li>
+</ul>
+<p>Here <span class="math inline">\(\Gamma\)</span> is a <em>context</em> which declares the types of any variables that appear. e.g</p>
+<ul>
+<li><span class="math inline">\(\Gamma, x : A \vdash B(x) \  type\)</span> - "a <em>family of types</em> over <span class="math inline">\(A\)</span>"</li>
+<li><span class="math inline">\(\Gamma, x : A \vdash b(x) : B(x)\)</span> - "a <em>family of terms</em>"</li>
+</ul>
+<p>(Imagine:</p>
+<ul>
+<li><span class="math inline">\(n : \mathbb{N} \vdash \mathbb{R}^n \  type\)</span></li>
+<li><span class="math inline">\(n : \mathbb{N} \vdash \bar{0} : \mathbb{R}^n\)</span></li>
+</ul>
+<p>)</p>
+<p>There are four kinds of <em>rules</em> (in place of axioms) that can be used in derivations:</p>
+<ol type="1">
+<li><strong>Formation rules</strong> form new types:
+<ul>
+<li><span class="math inline">\(^\times\)</span><em>formation</em>: given types <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> there is a <em>product type</em> <span class="math inline">\(A \times B\)</span> <span class="math display">\[\frac{\Gamma \vdash A \  type \qquad \Gamma \vdash B \  type}{\Gamma \vdash A \times B \  type}\]</span></li>
+</ul></li>
+<li><strong>Introduction rules</strong> introduce new terms:
+<ul>
+<li><span class="math inline">\(^\times\)</span><em>introduction</em>: given terms <span class="math inline">\(a : A\)</span> and <span class="math inline">\(b : B\)</span> there is a term <span class="math inline">\((a, b) : A \times B\)</span> <span class="math display">\[\frac{\Gamma \vdash a : A \qquad \Gamma \vdash b : B}{\Gamma \vdash (a, b) : A \times B}\]</span></li>
+</ul></li>
+<li><strong>Elimination rules</strong> use the new terms:
+<ul>
+<li><span class="math inline">\(^\times\)</span><em>elimination</em>: given a term <span class="math inline">\(p : A \times B\)</span> there are terms <span class="math inline">\(pr_1(p) : A\)</span> and <span class="math inline">\(pr_2(p) : B\)</span></li>
+</ul></li>
+</ol>
+</article>
+  </main>
+
+  <footer>
+    Too long, didn't write.
+  </footer>
+
+  <script
+    type="text/javascript"
+    async
+    src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+</body>
+
+</html>
