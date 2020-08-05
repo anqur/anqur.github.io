@@ -3,7 +3,7 @@ import subprocess as sp
 from pathlib import Path
 
 # Why not `asyncio`?  You are thinking peach!  That's not parallelism!
-from multiprocessing import Process, JoinableQueue, Lock, Value
+from multiprocessing import Process, JoinableQueue, Value
 
 _INPUT_PATHS = [
     Path("."),
@@ -12,7 +12,7 @@ _INPUT_PATHS = [
 ]
 
 
-def collector(input_paths, pending_items, lock, total, is_force):
+def collector(input_paths, pending_items, total, is_force):
     for post in input_paths:
         if not post.is_dir():
             continue
@@ -29,7 +29,7 @@ def collector(input_paths, pending_items, lock, total, is_force):
             total.value += 1
 
 
-def generator(pending_items, lock, done, total, tmpl):
+def generator(pending_items, done, total, tmpl):
     while True:
         infile, outfile = pending_items.get()
 
@@ -72,17 +72,13 @@ def main():
 
     input_paths = [Path(args.input_path)] if args.input_path else _INPUT_PATHS
     pending_items = JoinableQueue()
-    lock = Lock()
     done, total = Value("i", 0), Value("i", 0)
 
     coll = Process(
-        target=collector,
-        args=(input_paths, pending_items, lock, total, args.force),
+        target=collector, args=(input_paths, pending_items, total, args.force),
     )
     gens = [
-        Process(
-            target=generator, args=(pending_items, lock, done, total, tmpl)
-        )
+        Process(target=generator, args=(pending_items, done, total, tmpl))
         for _ in range(args.jobs)
     ]
 
