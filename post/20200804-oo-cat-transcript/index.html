@@ -42,12 +42,12 @@
 <li><span class="math inline">\(\Gamma, x : A \vdash B(x) \  type\)</span> - "a <em>family of types</em> over <span class="math inline">\(A\)</span>"</li>
 <li><span class="math inline">\(\Gamma, x : A \vdash b(x) : B(x)\)</span> - "a <em>family of terms</em>"</li>
 </ul>
-<p>(Imagine:</p>
+<blockquote>
 <ul>
 <li><span class="math inline">\(n : \mathbb{N} \vdash \mathbb{R}^n \  type\)</span></li>
 <li><span class="math inline">\(n : \mathbb{N} \vdash \bar{0} : \mathbb{R}^n\)</span></li>
 </ul>
-<p>)</p>
+</blockquote>
 <p>There are four kinds of <em>rules</em> (in place of axioms) that can be used in derivations:</p>
 <ol type="1">
 <li><strong>Formation rules</strong> form new types:
@@ -120,6 +120,28 @@
 <ul>
 <li><em>Definition:</em> There <strong>exists a unique</strong> term of type <span class="math inline">\(A\)</span> just when the type <span class="math inline">\(\sum\limits_{a : A} \prod\limits_{x : A} a =_A x\)</span> is inhabited, ie, just when the "space" <span class="math inline">\(A\)</span> is <em>contractible</em>.</li>
 </ul>
+<blockquote>
+<p>Path induction expresses the contractibility of based path spaces!</p>
+</blockquote>
+<ul>
+<li><em>Definition:</em> Types <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <strong>equivalent</strong> just when the following type is inhabited: <span class="math display">\[A \simeq B :\equiv \sum\limits_{f : A \rightarrow B} (\sum\limits_{g : B \rightarrow A} \prod\limits_{a : A} g(f(a)) =_A a) \times (\sum\limits_{h : B \rightarrow A} \prod\limits_{b : B} f(h(b)) =_B b)\]</span></li>
+</ul>
+<p>By the elimination rules for dependent sums and functions, a term in <span class="math inline">\(A \simeq B\)</span> gives terms <span class="math inline">\(f : A \rightarrow B\)</span> and <span class="math inline">\(g, h : B \rightarrow A\)</span> together with <strong>homotopies</strong> <span class="math inline">\(\alpha : \prod\limits_{a : A} g(f(a)) =_A a\)</span> and <span class="math inline">\(\beta : \prod\limits_{b : B} f(h(b)) =_B b\)</span>.</p>
+<p>By composing these one can show that <span class="math inline">\(\prod\limits_{b : B} g(b) =_B h(b)\)</span>. But there is a good reason to define an <strong>equivalence</strong> to be a function <span class="math inline">\(f : A \rightarrow B\)</span> equipped with a priori distinct <em>left and right inverses</em>: given any <span class="math inline">\(x, y : (\sum\limits_{g : B \rightarrow A} \prod\limits_{a : A} g(f(a)) =_A a) \times (\sum\limits_{h : B \rightarrow A} \prod\limits_{b : B} f(h(b)) =_B b)\)</span> then <span class="math inline">\(x = y\)</span>, while the type <span class="math inline">\(\sum\limits_{g : B \rightarrow A} (\prod\limits_{a : A} g(f(a)) =_A a \times (\prod\limits_{b : B} f(g(b)) =_B b)\)</span> might have distinct terms.</p>
+<h2 id="act-ii-infty-category-theory-for-undergraduates">ACT II: <span class="math inline">\(\infty\)</span>-category theory for undergraduates</h2>
+<blockquote>
+<p>Joint with Mike Shulman</p>
+</blockquote>
+<p>We work in an extension of HoTT in which types are allowed to depend on polytopes within <em>directed cubes</em>:</p>
+<blockquote>
+<p>Products of a directed interval <span class="math inline">\(\mathbb{I}\)</span>, which has <span class="math inline">\(0, 1 : \mathbb{I}\)</span> and <span class="math inline">\(x, y : \mathbb{I} \vdash x \leq y\)</span>.</p>
+</blockquote>
+<ul>
+<li><span class="math inline">\(\Delta^n :\equiv \{ \langle t, ... tn \rangle : \mathbb{I}^n | t_n \leq \ldots \leq t_1 \}\)</span></li>
+<li><span class="math inline">\(\partial \Delta^2 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (t = s) \lor (s = 1)) \}\)</span></li>
+<li><span class="math inline">\(\Lambda^2_1 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (s = 1)) \}\)</span></li>
+</ul>
+<p>(WIP)</p>
 <h2 id="my-notes">My notes</h2>
 <ul>
 <li><a id="footnote-1"></a> <a href="#footnote-ref-1"><sup>↑</sup></a> The two computation rules are <span class="math inline">\(\beta\)</span><em>-reduction</em> and <span class="math inline">\(\eta\)</span><em>-reduction</em></li>

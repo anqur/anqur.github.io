@@ -35,12 +35,8 @@ appear. e.g
 * $\Gamma, x : A \vdash B(x) \  type$ - "a *family of types* over $A$"
 * $\Gamma, x : A \vdash b(x) : B(x)$ - "a *family of terms*"
 
-(Imagine:
-
-* $n : \mathbb{N} \vdash \mathbb{R}^n \  type$
-* $n : \mathbb{N} \vdash \bar{0} : \mathbb{R}^n$
-
-)
+> * $n : \mathbb{N} \vdash \mathbb{R}^n \  type$
+> * $n : \mathbb{N} \vdash \bar{0} : \mathbb{R}^n$
 
 There are four kinds of *rules* (in place of axioms) that can be used in
 derivations:
@@ -166,6 +162,39 @@ The homotopical interpretation inspired the following definitions:
 * *Definition:* There **exists a unique** term of type $A$ just when the type
 $\sum\limits_{a : A} \prod\limits_{x : A} a =_A x$ is inhabited, ie, just when
 the "space" $A$ is *contractible*.
+
+> Path induction expresses the contractibility of based path spaces!
+
+* *Definition:* Types $A$ and $B$ are **equivalent** just when the following
+type is inhabited:
+$$A \simeq B :\equiv \sum\limits_{f : A \rightarrow B} (\sum\limits_{g : B \rightarrow A} \prod\limits_{a : A} g(f(a)) =_A a) \times (\sum\limits_{h : B \rightarrow A} \prod\limits_{b : B} f(h(b)) =_B b)$$
+
+By the elimination rules for dependent sums and functions, a term in
+$A \simeq B$ gives terms $f : A \rightarrow B$ and $g, h : B \rightarrow A$
+together with **homotopies** $\alpha : \prod\limits_{a : A} g(f(a)) =_A a$ and
+$\beta : \prod\limits_{b : B} f(h(b)) =_B b$.
+
+By composing these one can show that $\prod\limits_{b : B} g(b) =_B h(b)$.  But
+there is a good reason to define an **equivalence** to be a function
+$f : A \rightarrow B$ equipped with a priori distinct *left and right inverses*:
+given any
+$x, y : (\sum\limits_{g : B \rightarrow A} \prod\limits_{a : A} g(f(a)) =_A a) \times (\sum\limits_{h : B \rightarrow A} \prod\limits_{b : B} f(h(b)) =_B b)$
+then $x = y$, while the type
+$\sum\limits_{g : B \rightarrow A} (\prod\limits_{a : A} g(f(a)) =_A a \times (\prod\limits_{b : B} f(g(b)) =_B b)$ might have distinct terms.
+
+## ACT II: $\infty$-category theory for undergraduates
+
+> Joint with Mike Shulman
+
+We work in an extension of HoTT in which types are allowed to depend on
+polytopes within *directed cubes*:
+
+> Products of a directed interval $\mathbb{I}$, which has $0, 1 : \mathbb{I}$
+> and $x, y : \mathbb{I} \vdash x \leq y$.
+
+* $\Delta^n :\equiv \{ \langle t, ... tn \rangle : \mathbb{I}^n | t_n \leq \ldots \leq t_1 \}$
+* $\partial \Delta^2 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (t = s) \lor (s = 1)) \}$
+* $\Lambda^2_1 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (s = 1)) \}$
 
 (WIP)
 
