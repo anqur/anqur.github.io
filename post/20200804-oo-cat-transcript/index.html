@@ -105,7 +105,7 @@
 <li>a term <span class="math inline">\(h : p =_{x =_A y} q\)</span> <span class="math inline">\(\leftrightsquigarrow\)</span> a <strong>homotopy</strong> <span class="math inline">\(h\)</span> from <span class="math inline">\(p\)</span> to <span class="math inline">\(q\)</span> in <span class="math inline">\(A\)</span></li>
 </ul>
 <p align="center">
-<img alt="homotopy" src="homotopy.png">
+<img alt="Homotopy" src="homotopy.png">
 </p>
 <p>From this point of view, <em>symmetry</em> and <em>transitivity</em> of equality becomes <em>reversals</em> and <em>compositions</em> of <strong>paths</strong>, and of <strong>homotopies</strong>, and of <strong>higher homotopies</strong>, as summarized by a theorem of Lumsdaine and van den Berg-Garner: types inherit the structure of an <span class="math inline">\(\infty\)</span>-groupoid.</p>
 <ul>
@@ -114,7 +114,7 @@
 <li>the <em>dependent function</em> type <span class="math inline">\(\prod\limits_{x : A} B(x)\)</span> <span class="math inline">\(\leftrightsquigarrow\)</span> the space of <strong>sections</strong></li>
 </ul>
 <p align="center">
-<img alt="fibration" src="fibration.png">
+<img alt="Fibration" src="fibration.png">
 </p>
 <p>The homotopical interpretation inspired the following definitions:</p>
 <ul>
@@ -141,11 +141,39 @@
 <li><span class="math inline">\(\partial \Delta^2 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (t = s) \lor (s = 1)) \}\)</span></li>
 <li><span class="math inline">\(\Lambda^2_1 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (s = 1)) \}\)</span></li>
 </ul>
-<p>(WIP)</p>
-<h2 id="my-notes">My notes</h2>
+<p align="center">
+<img alt="Directed cube" src="directed-cube.png">
+</p>
+<p>Given polytopes <span class="math inline">\(\Phi \subset \Psi\)</span> and a function <span class="math inline">\(f : \Phi \rightarrow A\)</span> we may form an <em>extension type</em>: <span class="math inline">\(\left\langle\array{\Phi &amp; \xrightarrow{f} &amp; A \\ \downarrow &amp; \nearrow &amp; \\ \Psi &amp; &amp;}\right\rangle\)</span> <a href="#footnote-2"><sup>2</sup></a> <a id="footnote-ref-1"></a> whose terms are <span class="math inline">\(g : \Psi \rightarrow A\)</span> so that <span class="math inline">\(g |_{\Phi} \equiv f\)</span>.</p>
+<blockquote>
+<p>Confidential for grad students: semantics in Reedy fibrant bisimplicial sets</p>
+</blockquote>
 <ul>
-<li><a id="footnote-1"></a> <a href="#footnote-ref-1"><sup>↑</sup></a> The two computation rules are <span class="math inline">\(\beta\)</span><em>-reduction</em> and <span class="math inline">\(\eta\)</span><em>-reduction</em></li>
+<li><em>Definition:</em> Given <span class="math inline">\(x, y : A\)</span>, <span class="math inline">\(hom_A(x, y) :\equiv \left\{ \array{ \partial\Delta&#39; &amp; \xrightarrow{x, y} &amp; A \\ \downarrow &amp; \nearrow &amp; \\ \Delta&#39; &amp; &amp; } \right\}\)</span> <a href="#footnote-2"><sup>2</sup></a> <a id="footnote-ref-1"></a> is the type of <em>arrow</em> in <span class="math inline">\(A\)</span> from <span class="math inline">\(x\)</span> to <span class="math inline">\(y\)</span>.</li>
+<li><em>Definition:</em> A type <span class="math inline">\(A\)</span> is an <em><span class="math inline">\(\infty\)</span>-groupoid</em> if <span class="math inline">\(path{\text -}to{\text -}arr : x =_A y \rightarrow hom_A(x, y)\)</span> is an equivalence.</li>
 </ul>
+<blockquote>
+<p><span class="math inline">\(refl_x \mapsto id_x\)</span></p>
+</blockquote>
+<ul>
+<li><em>Definition:</em> A type <span class="math inline">\(A\)</span> is a <em>pre-<span class="math inline">\(\infty\)</span>-category</em> if every composable pair of arrows has <strong>a unique composite</strong>: for all <span class="math inline">\(f : hom_A(x, y)\)</span> and <span class="math inline">\(g : hom_A(y, z)\)</span> the type <span class="math inline">\(\left\{ \array{ \Lambda^2_1 &amp; \xrightarrow{f, g} &amp; A \\ \downarrow &amp; \nearrow &amp; \\ \Delta^2 &amp; &amp; } \right\}\)</span> <a href="#footnote-2"><sup>2</sup></a> <a id="footnote-ref-1"></a> is contractible.</li>
+<li><em>Notation:</em> Denote the <strong>unique</strong> inhabitant by:
+<p align="center">
+<img alt="comp g f" src="compgf.png">
+</p></li>
+</ul>
+<p>In any <em>pre-<span class="math inline">\(\infty\)</span>-category</em> <span class="math inline">\(A\)</span>:</p>
+<details>
+<summary> <em>Lemma:</em> Each <span class="math inline">\(x : A\)</span> has an <em>identity arrow</em> <span class="math inline">\(id_x : hom_A(x, x)\)</span> so that for all <span class="math inline">\(f : hom_A(x, y)\)</span> and all <span class="math inline">\(k : hom_A(w, x)\)</span>, <span class="math inline">\(f \cdot id_x = f\)</span> and <span class="math inline">\(id_x \cdot k = k\)</span>. </summary>
+<p>
+Proof: The constant function defines a term <span class="math inline">\(id_x :\equiv \lambda t . x : hom_A(x, x) :\equiv \left\{ \array{ \partial \Delta&#39; &amp; \xrightarrow{(x, x)} &amp; A \\ \downarrow &amp; \nearrow &amp; \\ \Delta&#39; &amp; &amp; } \right\}\)</span> <a href="#footnote-2"><sup>2</sup></a> <a id="footnote-ref-1"></a>. The type <span class="math inline">\(\left\{ \array{ \Lambda^2_1 &amp; \xrightarrow{id_x, f} &amp; A \\ \downarrow &amp; \nearrow &amp; \\ \Delta^2 &amp; &amp;} \right\}\)</span> <a href="#footnote-2"><sup>2</sup></a> <a id="footnote-ref-1"></a> is inhabited by <span class="math inline">\(\lambda s \lambda t, f(t) : \Delta^2 \rightarrow A\)</span>, proving <span class="math inline">\(f \circ id_x = f\)</span>. <span class="math inline">\(\square\)</span>
+</p>
+</details>
+<h2 id="my-notes">My notes</h2>
+<ol type="1">
+<li><a id="footnote-1"></a> <a href="#footnote-ref-1"><sup>↑</sup></a> The two computation rules are <span class="math inline">\(\beta\)</span><em>-reduction</em> and <span class="math inline">\(\eta\)</span><em>-reduction</em></li>
+<li><a id="footnote-2"></a> <a href="#footnote-ref-2"><sub>↑</sup></a> Some hook arrows and dashed arrows are omitted for limitations of inline <span class="math inline">\(\TeX\)</span></li>
+</ol>
 </article>
   </main>
 

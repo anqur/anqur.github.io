@@ -138,7 +138,7 @@ $A$
 $p$ to $q$ in $A$
 
 <p align="center">
-<img alt="homotopy" src="homotopy.png">
+<img alt="Homotopy" src="homotopy.png">
 </p>
 
 From this point of view, *symmetry* and *transitivity* of equality becomes
@@ -154,7 +154,7 @@ Berg-Garner: types inherit the structure of an $\infty$-groupoid.
 $\leftrightsquigarrow$ the space of **sections**
 
 <p align="center">
-<img alt="fibration" src="fibration.png">
+<img alt="Fibration" src="fibration.png">
 </p>
 
 The homotopical interpretation inspired the following definitions:
@@ -196,9 +196,63 @@ polytopes within *directed cubes*:
 * $\partial \Delta^2 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (t = s) \lor (s = 1)) \}$
 * $\Lambda^2_1 :\equiv \{ \langle s, t \rangle : \mathbb{I}^2 | (t \leq s) \land ((t = 0) \lor (s = 1)) \}$
 
+<p align="center">
+<img alt="Directed cube" src="directed-cube.png">
+</p>
+
+Given polytopes $\Phi \subset \Psi$ and a function $f : \Phi \rightarrow A$ we
+may form an *extension type*:
+$\left\langle\array{\Phi & \xrightarrow{f} & A \\ \downarrow & \nearrow & \\ \Psi & &}\right\rangle$
+[<sup>2</sup>](#footnote-2) <a id="footnote-ref-1"></a> whose terms are
+$g : \Psi \rightarrow A$ so that $g |_{\Phi} \equiv f$.
+
+> Confidential for grad students: semantics in Reedy fibrant bisimplicial sets
+
+* *Definition:* Given $x, y : A$,
+$hom_A(x, y) :\equiv \left\{ \array{ \partial\Delta' & \xrightarrow{x, y} & A \\ \downarrow & \nearrow & \\ \Delta' & & } \right\}$
+[<sup>2</sup>](#footnote-2) <a id="footnote-ref-1"></a> is the type of *arrow*
+in $A$ from $x$ to $y$.
+* *Definition:* A type $A$ is an *$\infty$-groupoid* if
+$path{\text -}to{\text -}arr : x =_A y \rightarrow hom_A(x, y)$ is an
+equivalence.
+
+> $refl_x \mapsto id_x$
+
+* *Definition:* A type $A$ is a *pre-$\infty$-category* if every composable pair
+of arrows has **a unique composite**: for all $f : hom_A(x, y)$ and
+$g : hom_A(y, z)$ the type
+$\left\{ \array{ \Lambda^2_1 & \xrightarrow{f, g} & A \\ \downarrow & \nearrow & \\ \Delta^2 & & } \right\}$
+[<sup>2</sup>](#footnote-2) <a id="footnote-ref-1"></a> is contractible.
+* *Notation:* Denote the **unique** inhabitant by:
+<p align="center">
+<img alt="comp g f" src="compgf.png">
+</p>
+
+In any *pre-$\infty$-category* $A$:
+
+<details>
+<summary>
+*Lemma:* Each $x : A$ has an *identity arrow* $id_x : hom_A(x, x)$ so that for
+all $f : hom_A(x, y)$ and all $k : hom_A(w, x)$, $f \cdot id_x = f$ and
+$id_x \cdot k = k$.
+</summary>
+<p>
+Proof: The constant function defines a term
+$id_x :\equiv \lambda t . x : hom_A(x, x) :\equiv \left\{ \array{ \partial \Delta' & \xrightarrow{(x, x)} & A \\ \downarrow & \nearrow & \\ \Delta' & & } \right\}$
+[<sup>2</sup>](#footnote-2) <a id="footnote-ref-1"></a>.
+The type
+$\left\{ \array{ \Lambda^2_1 & \xrightarrow{id_x, f} & A \\ \downarrow & \nearrow & \\ \Delta^2 & &} \right\}$
+[<sup>2</sup>](#footnote-2) <a id="footnote-ref-1"></a> is inhabited by
+$\lambda s \lambda t, f(t) : \Delta^2 \rightarrow A$, proving
+$f \circ id_x = f$. $\square$
+</p>
+</details>
+
 (WIP)
 
 ## My notes
 
-* <a id="footnote-1"></a> [<sup>↑</sup>](#footnote-ref-1) The two computation rules are $\beta$*-reduction* and
+1. <a id="footnote-1"></a> [<sup>↑</sup>](#footnote-ref-1) The two computation rules are $\beta$*-reduction* and
 $\eta$*-reduction*
+1. <a id="footnote-2"></a> [<sub>↑</sup>](#footnote-ref-2) Some hook arrows and
+dashed arrows are omitted for limitations of inline $\TeX$
