@@ -1,60 +1,90 @@
-# 履历
+# 卢星宇
 
-- 卢星宇 (1996.02)
-- [+86 158-0894-8978](tel:+8615808948978)
-/ [se14luxingyu@foxmail.com](mailto:se14luxingyu@foxmail.com)
-- 就职于华为 (2018.8 ~)
-- 毕业于暨南大学, 2018 届软件工程专业
-- 期望职位: Java 后台开发工程师
+* 🎂 1996-02-29
+* 📱 [15808948978](tel:+8615808948978)
+* 📧 [se14luxingyu@foxmail.com](mailto:se14luxingyu@foxmail.com)
+* ⌨️ [github.com/anqurvanillapy](https://github.com/anqurvanillapy)
+* ✍🏻 [anqurvanillapy.github.io](https://anqurvanillapy.github.io)
 
-## 技能
+## 教育经历
 
-- 熟悉: C/C++, Java, Go, Python
-- 了解: ES 6/Node.js, Lua
-- 接触: Rust, Scala, Haskell
+<div>
+* 暨南大学 (本科) 软件工程专业
+* 2014-2018
+</div>
 
-## 经历
+## 工作经历
 
-2017.7 ~ 2017.12: 西山居/剑侠越南事业组
+<div>
+* **华为终端应用市场业务部 / AppGallery**, 深圳
+* 2020-03 - 现在
+</div>
 
-- 剑侠情缘越南网络版 1 运营开发 (C++/Lua)
-- H5 游戏引擎 "白鹭" 工具开发
-- H5 游戏 Web 平台全栈开发
-    + 技术栈: Preact, webpack, Go, MongoDB/MySQL, Nginx
-    + 负责游戏展示栏目, 内容后台管理, 账号系统等前后端设计/实现
+(Web 开发 / Java) 应用分发开发部.
 
-2018.8 ~ 2020.3: 华为/传送接入产品线
+* 部门主要业务为 安卓 (APK, App Bundle, 多 APK), RPK 快应用, 方舟,
+鸿蒙等不同形态应用的全球分发
+* 负责应用 生命周期, 审核, 维护, 检测, 预约内测, 用户分析 等 *管理态* 业务功能开发, 创建/维护
+多个多种形态的微服务及其相关业务, 毕业工作以来第一次接触生产环境 Java 编程, 半年不到的时间,
+迅速成长为多个微服务责任人与需求责任人; 有与海外同事共事经历
+* 技术栈: ServiceComb (自研微服务框架), Spring, MySQL, Kafka, elastic-job, Redis,
+OpenResty
 
-- 边缘计算实验方案
-    + 技术栈: DPDK, JNI, JCTools, Apache Storm, DPI, gRPC
-    + 产品中特定单板上的数据收集/分析, 负责总体设计/实现: DPDK 二层报文转 IP 报文, 报文转
-    jobject, 消息管道, 流处理, 结果上报, 深度报文解析
-- 软件安全整改专项
-    + 基于 Clang 前端编写静态分析工具
-- 二/三层协议栈 OMCI 云原生应用开发 (网络功能虚拟化 NFV)
+<div>
+* **华为传送接入产品线**, 东莞
+* 2018-08 - 2020-03 (1 年 8 个月)
+</div>
+
+(嵌入式软件开发 / C, C++, Go) 接入网开发部.
+
+部门业务为 OLT (光线路终端, 二三层网络转发硬件产品) 上的嵌入式软件开发, 提供 FTTx 解决方案.
+本人参与 FTTx 探索性项目居多, 业务项目经历偏少.
+
+可信专项工作:
+
+- 组播协议 C 切 C++ 重写:
+    + 任开发教练, 与公司可信软件专家一起带领团队重写组播 (IGMP) 协议栈 (C 语言重写为 C++),
+    个人工作为 架构设计协助, 代码评审, 基础设施开发 (命令行解析, 计时器, 依赖注入机制,
+    数据持久化机制, GoogleTest UT, CI/CD)
+    + 因多个框架代码的贡献, 荣获松山湖首届代码尖兵
+- 可信整改/重构工作
+    + 自研通信协议的 IDL 设计, 及其 编译器/运行时 的 设计/开发, Go 语言手写 LL(1)
+    解析器, IDL 语法类似 ProtoBuf, 解析生成业务专用 TLV 协议格式
+    + 基于 Clang 前端与 Python bindings, 编写 C 语言静态分析工具, 进行批量 lint fix,
+    以及业务代码生成
+- 技术栈: C, C++, Python
+
+探索项目工作:
+
+- OMCI (ONU 管理协议) 云原生应用开发 (NFV 网络功能虚拟化)
+    + 负责 OMCI 协议栈基本功能 开发/互通, 与 vOLT (云化虚拟 OLT) 通信, 部署上云管道 OS,
+    以及有状态组件的无状态化重构; 项目参与 MWC 2019 上海展出, 与多个友商进行互通测试
     + 技术栈: 管道 OS, Go, ProtoBuf, gRPC, Redis
-    + 负责协议栈部署上云, 基本功能开发/互通, 有状态组件转无状态, 管道 OS 部署等工作
-- 板间通信协议的 IDL 设计, 及其 编译器/运行时 的 设计/开发
-    + 技术栈: C 运行时, Go 解析器, LL(1), TLV 协议格式
-- 二/三层网络协议栈业务重构:
-    + ONT 以太网运管维协议栈 (ONTEOAM) C 切换 C++17 设计/开发 (20k sloc 重构后 10k
-    sloc), 负责 CLI, DB, 业务实体等模块
-    + IGMP/MLD 协议栈 C 切换 C++17 教练/设计/开发
+- 边缘计算实验方案 (实习期项目)
+    + OLT 设备上的二层网络流量 收集/分析/识别, 负责总体设计/实现: DPDK 二层报文转三层报文
+    (IP defragmentation), 报文转 jobject, 通过 Kafka 与 Storm 收集, 进行深度报文解析,
+    分析结果通过 gRPC 上报云端
 
-2020.3 ~: 华为消费者事业群 AppGallery
+<div>
+* **西山居 / 剑侠 I 越南事业组, 实习**, 珠海
+* 2017-07 - 2017-12 (5 个月)
+</div>
 
-- Java Web 开发
+(游戏前后端开发与 Web 开发 / C++, Lua, Go)
+
+- 剑侠情缘越南网络版 I 运营开发
+- H5 游戏引擎 "白鹭" 工具开发
+- H5 游戏 Web 分发平台全栈开发, 负责游戏展示栏目, 后台内容管理, 账号系统等前后端设计/实现
+    + 技术栈: Preact, webpack, Go, MongoDB/MySQL, Nginx
 
 ## 兴趣
 
-- Web 开发/云原生, 网络, 异步计算, 编译原理, 函数式编程
-- 当前以深入学习 *Web 开发* 方向为主
-- 多语言爱好者, 接触但不限于 Agda, OCaml
-- 持续学习, 除阅读框架代码, 对类型论, 范畴论等学术知识有一定了解
+- 工作兴趣以 Web 开发/云原生/网络 为主, 个人兴趣围绕 编程语言, 可编写 Rust, Haskell,
+OCaml, Agda 等语言的项目, 并对 编程语言理论/类型理论 有一定了解
+- 热爱开源文化, 参与过少量 Python 社区贡献, GitHub 个人年贡献值 300+; 曾任 Python 2018
+中国大会深圳站讲师
 
 ## 其他
 
-- 公司级荣誉共 3 项, 研究所分部级荣誉 1 项
-- CET 6 成绩 558, 口语流利
-- 代码 [github.com/anqurvanillapy](https://github.com/anqurvanillapy)
-- 博客 [anqurvanillapy.github.io](https://anqurvanillapy.github.io)
+- 入职华为 2 年, 获得公司级荣誉共 4 项
+- CET 6 成绩 558, 口语流利, 有与海外同事共事经验
