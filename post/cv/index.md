@@ -77,6 +77,12 @@ OpenResty
 - H5 游戏 Web 分发平台全栈开发, 负责游戏展示栏目, 后台内容管理, 账号系统等前后端设计/实现
     + 技术栈: Preact, webpack, Go, MongoDB/MySQL, Nginx
 
+## 技能
+
+(TODO)
+
+* Lexer/parser/core language/codegen: MbSQL
+
 ## 兴趣
 
 - 工作兴趣以 Web 开发/云原生/网络 为主, 个人兴趣围绕 编程语言, 可编写 Rust, Haskell,
