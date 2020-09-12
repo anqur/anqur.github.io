@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="c-中的无限循环">C 中的无限循环</h1>
+    <article>
+      <h1 id="c-中的无限循环">C 中的无限循环</h1>
 <p>使用 C 语言能够写出多少种无限循环呢? 这个问题可能是没有什么实际意义的, 你可以说不过是对地址跳转指令的一系列抽象而已. 然而这不妨我们对 C 标准库和 POSIX 标准函数做一些其他方面的理解和扩展.</p>
 <p>让我们来数数有多少种实现无限循环的可能.</p>
 <p>首先我们定义一个测试用的函数, 这个函数模拟一个半人半神的哲学家, 他只会思考, 并不会拿起筷子来吃东西.</p>
@@ -78,7 +79,8 @@
 <span id="cb7-7"><a href="#cb7-7"></a>    setcontext(&amp;ctx);</span>
 <span id="cb7-8"><a href="#cb7-8"></a>}</span></code></pre></div>
 <p>其他的尝试未来也许会更新. 当然直接在 C 中插入 <code>__asm__</code> 来放入相关的指令代码是完全可行的, 目前不想这么折腾. (除非未来我想做个跨平台的协程库? <em>:)</em>)</p>
-</article>
+
+    </article>
   </main>
 
   <footer>

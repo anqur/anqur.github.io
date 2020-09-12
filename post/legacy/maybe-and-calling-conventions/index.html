@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="maybet-与调用规范"><code>maybe&lt;T&gt;</code> 与调用规范</h1>
+    <article>
+      <h1 id="maybet-与调用规范"><code>maybe&lt;T&gt;</code> 与调用规范</h1>
 <p>之前基友和我聊到 V8 的一些源码的东西, 他和我提到 V8 的代码库中大量的使用到了 <code>v8::Maybe&lt;T&gt;</code> 这一数据结构, 我便花了点时间走马观花地研究了一番.</p>
 <p>谈论 Maybe 结构不得不从 Haskell 说起, <code>v8::Maybe&lt;T&gt;</code> 的结构也提到了其直接来源是 Haskell 中的 <a href="https://hackage.haskell.org/package/base-4.10.1.0/docs/Data-Maybe.html"><code>Data.Maybe</code></a>. Maybe 是一种带有选项性质的 monad, 当某变量或函数接收到了 Maybe 类型的值时, 它可能携带了某种其他类型 (如 <code>Int</code>) 的值, 也可能是所谓的 nil 值. 将此翻译成 Haskell 的语言的话, 如果携带具体的值 <code>a</code>, 那么将表示成 <code>Just a</code>, 如果为空, 那么将表示成 <code>Nothing</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">returnSomething ::</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span>
@@ -195,7 +196,8 @@
 <blockquote>
 <p>说了那么多还是觉得 Rust 里头用的实在太爽 :)</p>
 </blockquote>
-</article>
+
+    </article>
   </main>
 
   <footer>

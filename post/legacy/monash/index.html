@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="monash-以-monadic-的姿势写-shell">Monash: 以 monadic 的姿势写 Shell</h1>
+    <article>
+      <h1 id="monash-以-monadic-的姿势写-shell">Monash: 以 monadic 的姿势写 Shell</h1>
 <p>最近在学习 Perl 6, 很少见的语法奇葩学习曲线陡峭的语言... 不过写完这个项目后是喜欢得很了. 最近设计了一门玩具语言 <em>Monash</em>, 即 <em>monad</em> 和 <em>Shell</em> 的混成词 (portmanteau, 怎么中文翻译这么奇怪), 以下的几个例子先尝尝鲜:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># 直接以 one-liner 的方式执行.</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a>$ <span class="ex">./monash</span> <span class="st">&quot;fortune &gt;&gt; echo 略 &gt;&gt;= cowsay&quot;</span></span>
@@ -87,7 +88,8 @@
 <h3 id="and-more...">And more...</h3>
 <p>好像自己打了一个好长的广告. Perl 6 将会成为我设计实现 DSL 的首选工具, 上一次对语言设计这么激动还是因为 Scheme 中神奇的 <code>(read)</code>... 但是 Lisp 对 imperative 世界的表达能力实在有限, 当然工具的探索也不能停止.</p>
 <p>Monash 的任何问题和 bug 欢迎提各种 <a href="https://github.com/anqurvanillapy/dimsumltd/issues">issues</a> ;).</p>
-</article>
+
+    </article>
   </main>
 
   <footer>

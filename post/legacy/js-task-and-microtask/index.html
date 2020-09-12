@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="初探-javascript-中的-task-和-microtask">初探 JavaScript 中的 task 和 microtask</h1>
+    <article>
+      <h1 id="初探-javascript-中的-task-和-microtask">初探 JavaScript 中的 task 和 microtask</h1>
 <p>农历新年第一天, 新春大吉了!</p>
 <p>之前使用 <code>setjmp.h</code> 结合对 <code>%rsp</code>/<code>%esp</code> 栈指针寄存器的直接操作制作过一个 asymmetric coroutine 库 <a href="https://github.com/anqurvanillapy/acoro">acoro</a>, 不过说实话机制非常不成熟, 可能都算不上 asymmetric... 主要是对 coroutine 的简单调度算是有了一个浅层次的认识. 这篇文主要是初探 ECMAScript 6 标准下的 task 和 microtask 机制, 但是具体标准以及 spec 细节我还未深入阅读, 先从简单例子看起. 更多详细内容请参考 <a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">此文</a>, 以下内容也做了大量参考.</p>
 <p>什么是 JavaScript 的 task 和 microtask 呢? 其实一切都得从大佬 Jake Archibald 于 2015 年的一篇文章 (上述的链接) 和上星期他在推特发的 <a href="https://twitter.com/jaffathecake/status/963007466471677953">quiz</a> 说起, 但我们不妨先来看看这个更简单的 quiz 作引导:</p>
@@ -82,7 +83,8 @@
 <p>这样子遇到第二行的 <code>Promise.resolve().then()</code> 后, 把其 callback 放入 microtask 列, 接着就能把 <code>n =&gt; console.log(n)</code> 放入 microtask 列中了, 而第一次放入的这个 callback 的效用只是延缓了 <code>() =&gt; console.log(2)</code> 的入列而已, 虽然浪费了一个临时的对象.</p>
 <p>这一个实践理解起来不难, 也算是我对非抢占式调度学习中的一些小插曲, 最大的意义其实在于不再停留在那种 "JS 引擎遇到耗时长的工作就 yield" 的错觉当中, JS 的执行是有迹可循有所定义的, 并且这种根据浏览器和引擎本身做出来的 task 和 microtask 分级, 对我而言其实也算是一种解决问题的新思路.</p>
 <p>新的一年也不能停止学习呀.</p>
-</article>
+
+    </article>
   </main>
 
   <footer>

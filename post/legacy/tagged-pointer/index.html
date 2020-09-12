@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="标记指针">标记指针</h1>
+    <article>
+      <h1 id="标记指针">标记指针</h1>
 <p>快速地记录一点技巧性的东西.</p>
 <p>在做一些数据处理有关的工作的时候, 如果要给数据打上一些标记 (比如给 token 打上一些类型有关的记录), 第一反应可能是去声明一个结构体, 然后留一个 <code>unsigned</code> 或相似类型的成员来记录单位为 1 位的多个 flag. 但是基于目前市面上较为流行的 <code>x86_64</code> 和 <code>i686</code> 这些架构, 有一个技巧可以稍微节省内存同时高效地做到数据标记, 嗯就是 <em>tagged pointer</em>.</p>
 <p>原理很简单, <code>malloc</code> 一些普遍的实现方式中, 我们申请分配后返回的虚拟地址都是 4 (32 位机) 或 8 (64 位机) 字节为单位对齐的, 也就是我们能保证至少有 2 个空位在我们分配到的地址中, 所以 <em>tagged pointer</em> 其实也就是利用了这几个因为对齐而产生的空位.</p>
@@ -28,7 +29,8 @@
 <span id="cb1-5"><a href="#cb1-5"></a><span class="pp">#define is_tagged(p)    ((uintptr_t)p &amp; 1u &gt; 0)</span></span></code></pre></div>
 <p>这么做的话一个待处理的对象 (比如节点, token) 能够节省至少 1 个字节的空间了吧 (甚至可能偶尔会干出一个 <code>int</code> 当 flag 的蠢事). 当然这么做也是有弊端的, 首先, 如果只是申请了如 <code>malloc(1)</code> 这么一点空间, 我们假设根据分配表 <code>malloc</code> 应该实际申请 2 字节的内存, 但是 <code>tag</code> 操作之后会造成指针指向无权限区域, 容易被 <em>invalid read size</em> 一锤击中头部, 虽然可以用 <code>const char*</code> 这样的标识规避非法读写问题, 但更应该避免为太小的数据对象打标记. 其次, <code>tag</code> 操作之后, 使用调试器追踪数据对象原始的情况时可能会有所困难, 虽然可以通过 <code>NDEBUG</code> 宏配合额外成员指针来追踪对象情况, 但无形中增加了代码的复杂程度.</p>
 <p>听说不少编译器都爱干这件事情, 实际项目中可以试一试 (又是个待重构的坑 :X).</p>
-</article>
+
+    </article>
   </main>
 
   <footer>

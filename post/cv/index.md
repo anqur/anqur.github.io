@@ -1,24 +1,24 @@
 # 卢星宇
 
-* 🎂 1996-02-29
-* 📱 [15808948978](tel:+8615808948978)
-* 📧 [se14luxingyu@foxmail.com](mailto:se14luxingyu@foxmail.com)
-* ⌨️ [github.com/anqurvanillapy](https://github.com/anqurvanillapy)
-* ✍🏻 [anqurvanillapy.github.io](https://anqurvanillapy.github.io)
+||||||
+|:-|:-:|:-:|-:|
+|🎂 1996-02|📱 [15808948978]|📧 [se14luxingyu@foxmail.com]|⌨️ [github.com/anqurvanillapy]|✍
+
+[15808948978]: tel:+8615808948978
+[se14luxingyu@foxmail.com]: mailto:se14luxingyu@foxmail.com
+[github.com/anqurvanillapy]: https://github.com/anqurvanillapy
 
 ## 教育经历
 
-<div>
-* 暨南大学 (本科) 软件工程专业
-* 2014-2018
-</div>
+|||
+|:-|-:|
+|暨南大学 (本科) 软件工程专业|2014-2018|
 
 ## 工作经历
 
-<div>
-* **华为终端应用市场业务部 / AppGallery**, 深圳
-* 2020-03 - 现在
-</div>
+|||
+|:-|-:|
+|**华为终端应用市场业务部 / AppGallery**, 深圳|2020-03 ~ 现在|
 
 (Web 开发 / Java) 应用分发开发部.
 
@@ -30,17 +30,16 @@
 * 技术栈: ServiceComb (自研微服务框架), Spring, MySQL, Kafka, elastic-job, Redis,
 OpenResty
 
-<div>
-* **华为传送接入产品线**, 东莞
-* 2018-08 - 2020-03 (1 年 8 个月)
-</div>
+|||
+|:-|-:|
+|**华为传送接入产品线**, 东莞|2018-08 ~ 2020-03|
 
 (嵌入式软件开发 / C, C++, Go) 接入网开发部.
 
 部门业务为 OLT (光线路终端, 二三层网络转发硬件产品) 上的嵌入式软件开发, 提供 FTTx 解决方案.
 本人参与 FTTx 探索性项目居多, 业务项目经历偏少.
 
-可信专项工作:
+可信专项工作 (C, C++, Python):
 
 - 组播协议 C 切 C++ 重写:
     + 任开发教练, 与公司可信软件专家一起带领团队重写组播 (IGMP) 协议栈 (C 语言重写为 C++),
@@ -52,7 +51,6 @@ OpenResty
     解析器, IDL 语法类似 ProtoBuf, 解析生成业务专用 TLV 协议格式
     + 基于 Clang 前端与 Python bindings, 编写 C 语言静态分析工具, 进行批量 lint fix,
     以及业务代码生成
-- 技术栈: C, C++, Python
 
 探索项目工作:
 
@@ -65,14 +63,13 @@ OpenResty
     (IP defragmentation), 报文转 jobject, 通过 Kafka 与 Storm 收集, 进行深度报文解析,
     分析结果通过 gRPC 上报云端
 
-<div>
-* **西山居 / 剑侠 I 越南事业组, 实习**, 珠海
-* 2017-07 - 2017-12 (5 个月)
-</div>
+|||
+|:-|-:|
+|**西山居 / 剑侠 I 越南事业组, 实习**, 珠海|2017-07 ~ 2017-12|
 
 (游戏前后端开发与 Web 开发 / C++, Lua, Go)
 
-- 剑侠情缘越南网络版 I 运营开发
+- 剑侠情缘越南网络版 I 运营开发, C++/Lua 游戏客户端/服务端
 - H5 游戏引擎 "白鹭" 工具开发
 - H5 游戏 Web 分发平台全栈开发, 负责游戏展示栏目, 后台内容管理, 账号系统等前后端设计/实现
     + 技术栈: Preact, webpack, Go, MongoDB/MySQL, Nginx

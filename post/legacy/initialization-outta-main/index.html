@@ -7,7 +7,7 @@
   <meta name="viewport" content="initial-scale=1">
 
   <title>tl;dw | Anqur</title>
-  <link rel="stylesheet" href="/scripts/style.css">
+  <link rel="stylesheet" href="/style/post.css">
   <link rel="stylesheet" href="/scripts/highlight.css">
 </head>
 
@@ -17,7 +17,8 @@
   </header>
 
   <main>
-    <article><h1 id="初探进程的动态初始化">初探进程的动态初始化</h1>
+    <article>
+      <h1 id="初探进程的动态初始化">初探进程的动态初始化</h1>
 <p>其实标题比较迷惑, 随笔而已.</p>
 <p>关于 Linux 程序 (ELF 格式) 的静动态链接以及进程的装载, 自己接触的并不多. 最近看了 jemalloc 的 <a href="https://people.freebsd.org/~jasone/jemalloc/bsdcan2006/jemalloc.pdf">论文</a>, 在准备看一些实现的时候, 看到了 <code>__attribute__((constructor))</code> 和 <code>__attribute__((destructor))</code> 这样的东西, 去查了下 GCC 的文档, 读起来是比较简单.</p>
 <blockquote>
@@ -53,7 +54,8 @@
 <p>有了这样的特性, 如果不是在 bare metal 那么硬核的场景下, 依赖 GCC 的扩展来写自己的共享库问题应该不大, 比如写一个管理内存的运行时, 可以用它方便地在 <code>.main</code> 之外做一些自定义工作, 尤其是内存管理机制的初始化.</p>
 <p>在读源码时, 还看到了一个好玩的东西叫 <code>WINAPI</code>, 这个关键字确实在 Windows 编程太常见, 然而好玩的地方在它背后其实是 <code>__stdcall</code> 这个关键字, 一搜发现是 calling conventions 这样的领域, 还有一组专业名词叫 function prologue/epilogue, 其实就是一套定义函数 caller 和 callee 行为的一些规范, 比如哪些寄存器保存参数, 栈的内容怎么管理, 虽然栈管理的规范要丰富一些, 但是有些编译器优化会涉及到寄存器, 而且一般会很头疼, 比如看到云风老师在博客里描述的一个 <a href="https://blog.codingnow.com/2017/09/direct3d12_return_struct_calling_convention_bug.html">问题</a>, 就是结构体在返回给 caller 的时候被 GCC 优化, D3D 的接口在取返回的结构体地址时和 GCC 不统一, 直接把 <code>this</code> 指针内容 (虚表) 写坏了. 我还留了个言问是不是 D3D 遵循了 <code>__vectorcall</code> 这样的规范, 然而自己没有精读过出错的代码, 怕是要被老师扁死. 不过如果真是这样的问题, GCC 自己有这样的关键字, 规避一下优化就好了.</p>
 <p>写到这里, 才明白 <em>Linkers &amp; Loaders</em> 这本书是时候找一找读一读了.</p>
-</article>
+
+    </article>
   </main>
 
   <footer>

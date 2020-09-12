@@ -67,7 +67,7 @@ def main():
     args = p.parse_args()
 
     tmpl = None
-    with open(Path("scripts") / "template.html") as f:
+    with open(Path("template") / "post.html") as f:
         tmpl = f.read()
 
     input_paths = [Path(args.input_path)] if args.input_path else _INPUT_PATHS
