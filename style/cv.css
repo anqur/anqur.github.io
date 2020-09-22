@@ -1,5 +1,14 @@
+td, a, p, ul, li {
+  font-size: smaller;
+}
+
 h1 {
   text-align: center;
+  font-size: large;
+}
+
+h2 {
+  font-size: small;
 }
 
 main {
