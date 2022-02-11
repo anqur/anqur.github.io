@@ -46,7 +46,7 @@ class="math inline">\(f^*\)</span> 是如何推导出来的. 当然,
 我们首先要理解以下几个概念及定义:</p>
 <ul>
 <li>什么是 pullback</li>
-<li>什么是沿着 <code>f</code> 的 pullback</li>
+<li>什么是沿着 <span class="math inline">\(f\)</span> 的 pullback</li>
 <li>什么是 slice category</li>
 <li>什么是 base change</li>
 </ul>
@@ -59,19 +59,19 @@ categorical semantics (范畴语义) 上表达了不同的数学对象,
 这些含义粗略地统称 "sameness" (相等), 需要严格区分开来.</p>
 <h3 id="definition-1.1-pullback">Definition 1.1 (pullback)</h3>
 <p>Pullback 就是长得像以下交换图的一个 limit (极限):</p>
-<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsMyxbMCwwLCJYIl0sWzEsMSwiWSJdLFsyLDAsIlgnIl0sWzAsMSwiZiJdLFsyLDEsImciLDJdXQ==&amp;embed" width="300" height="300" style="border-radius: 8px; border: none;">
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsMyxbMCwwLCJYIl0sWzEsMSwiWSJdLFsyLDAsIlgnIl0sWzAsMSwiZiJdLFsyLDEsImYnIiwyXV0=&amp;embed" width="432" height="304" style="border-radius: 8px; border: none;">
 </iframe>
 <p>因为在拓扑学及集合论中, pullback 的概念总是和 fiber bundle (纤维丛)
 与 cartesian product (笛卡尔积) 等概念扯上关系, 我们又可以称 pullback 为
 fiber product (纤维乘积). 在这里我们不会展开讨论. 但在以上场景当中,
 我们总会有这样一种正方形交换图:</p>
-<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNCxbMCwxLCJYIl0sWzEsMiwiWSJdLFsyLDEsIlgnIl0sWzEsMCwiWCBcXHRpbWVzX1kgWCciXSxbMCwxLCJmIl0sWzIsMSwiZyIsMl0sWzMsMCwicF8xIl0sWzMsMiwicF8yIiwyXV0=&amp;embed" width="400" height="400" style="border-radius: 8px; border: none;">
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNCxbMCwxLCJYIl0sWzEsMiwiWSJdLFsyLDEsIlgnIl0sWzEsMCwiWCBcXHRpbWVzX1kgWCciXSxbMCwxLCJmIl0sWzIsMSwiZiciLDJdLFszLDAsInBfMSJdLFszLDIsInBfMiIsMl1d&amp;embed" width="491" height="432" style="border-radius: 8px; border: none;">
 </iframe>
 <p><span class="math inline">\(p_1\)</span>/<span
 class="math inline">\(p_2\)</span> 的含义即 first/second projection
 (第一/第二的投射), 类似编程语言中的 pair (二元组, 键值对, 有序对, ...,
 etc), 取它的 <code>p[0]</code> 和 <code>p[1]</code> 的操作.</p>
-<h3 id="property-1.1-pullback-universal">Property 1.1
+<h3 id="property-1.2-pullback-universal">Property 1.2
 (pullback-universal)</h3>
 <p>Pullback 具有以下 universal property (泛性质): 如果有一个对象 <span
 class="math inline">\(W\)</span>, 它到 <span
@@ -80,12 +80,105 @@ class="math inline">\(X&#39;\)</span> 的态射经过相应到 <span
 class="math inline">\(Y\)</span> 的组合都相等, 则它有一个到 <span
 class="math inline">\(X \times_Y X&#39;\)</span> 的 unique morphism
 (特有态射) <span class="math inline">\(m!\)</span>, 即以下交换图:</p>
-<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNSxbMSwxLCJYIFxcdGltZXNfWSBYJyJdLFszLDEsIlgnIl0sWzMsMywiWSJdLFsxLDMsIlgiXSxbMCwwLCJXIl0sWzAsMSwicF8yIiwyXSxbMSwyLCJnIiwyXSxbMCwzLCJwXzEiXSxbMywyLCJmIl0sWzQsMCwibSEiXSxbNCwzLCJwXzEnIiwyXSxbNCwxLCJwXzInIiwxXV0=&amp;embed" width="400" height="400" style="border-radius: 8px; border: none;">
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNSxbMSwxLCJYIFxcdGltZXNfWSBYJyJdLFszLDEsIlgnIl0sWzMsMywiWSJdLFsxLDMsIlgiXSxbMCwwLCJXIl0sWzAsMSwicF8yIiwyXSxbMSwyLCJmJyIsMl0sWzAsMywicF8xIl0sWzMsMiwiZiJdLFs0LDAsIm0hIiwxXSxbNCwzLCJwXzEnIiwyXSxbNCwxLCJwXzInIiwxXV0=&amp;embed" width="619" height="560" style="border-radius: 8px; border: none;">
 </iframe>
-<h3 id="definition-1.2-pullback-along-f">Definition 1.2
+<h3 id="definition-1.3-pullback-along-f">Definition 1.3
 (pullback-along-<span class="math inline">\(f\)</span>)</h3>
 <p>"沿着 <span class="math inline">\(f\)</span> 的 pullback" (pullback
-along <span class="math inline">\(f\)</span>), 顾名思义.</p>
+along <span class="math inline">\(f\)</span>), 或者 "设一个范畴 <span
+class="math inline">\(C\)</span>, 存在一个 <span
+class="math inline">\(C\)</span> 的态射 <span class="math inline">\(f :
+X \to Y\)</span>, 有一个沿着 <span class="math inline">\(f\)</span> 的
+pullback", 这样的说法顾名思义, 指的是这样一个交换图:</p>
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNCxbMCwwLCJYIFxcdGltZXNfWSBYJyJdLFswLDEsIlgiXSxbMSwwLCJYJyJdLFsxLDEsIlkiXSxbMCwxXSxbMCwyXSxbMiwzXSxbMSwzLCJmIl1d&amp;embed" width="300" height="300" style="border-radius: 8px; border: none;">
+</iframe>
+<h2 id="slice-category">Slice category</h2>
+<p>Slice category 又称 overcategory (顶部范畴), 非常形象,
+它将某个对象从范畴中抽取出来, 将所有指向这个对象的态射当作新的对象,
+放到新的范畴中, 也就是形容 "将处在 (over) 某对象顶部的态射都取出来"
+这样一种动作. 我们来进一步看看这样一种定义.</p>
+<h3 id="definition-2.1-slice-category">Definition 2.1
+(slice-category)</h3>
+<p>设范畴 <span class="math inline">\(C\)</span> 和范畴内的一个对象
+<span class="math inline">\(X\)</span>, 一个在 <span
+class="math inline">\(C\)</span> 中关于 <span
+class="math inline">\(X\)</span> 的 slice category <span
+class="math inline">\(C/X\)</span> 包含:</p>
+<ul>
+<li>它的对象 <span class="math inline">\(f \in C\)</span> 是 <span
+class="math inline">\(C\)</span> 中的态射, 并且满足 <span
+class="math inline">\(cod(f) = X\)</span> (即 <span
+class="math inline">\(f\)</span> 的 codomain/余域 为 <span
+class="math inline">\(X\)</span>)</li>
+<li>它的态射 <span class="math inline">\(g : X \to X&#39; \in
+C\)</span>, 连接了 <span class="math inline">\(f : X \to Y\)</span> 和
+<span class="math inline">\(f&#39; : X&#39; \to Y\)</span>, 并有 <span
+class="math inline">\(f&#39; \circ g = f\)</span> 的关系</li>
+</ul>
+<p>即以下的交换图中:</p>
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsMyxbMCwxLCJYIl0sWzEsMCwiWCciXSxbMSwxLCJZIl0sWzEsMiwiZiciXSxbMCwyLCJmIiwyXSxbMCwxLCJnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV1d&amp;embed" width="304" height="304" style="border-radius: 8px; border: none;">
+</iframe>
+<p><span class="math inline">\(f\)</span> 和 <span
+class="math inline">\(f&#39;\)</span> 是 <span
+class="math inline">\(C/X\)</span> 的对象, <span
+class="math inline">\(g\)</span> 是 <span
+class="math inline">\(C/X\)</span> 的一个态射.</p>
+<h2 id="base-change">Base change</h2>
+<p>正如 <a href="#definition-1.1-pullback">Definition 1.1 (pullback)</a>
+里的正方形交换图所示, <span class="math inline">\(p_1\)</span> 其实就是
+<span class="math inline">\(f\)</span> 的一个 base change, 即 <span
+class="math inline">\(f\)</span> 的 base (基底) 本来是 <span
+class="math inline">\(Y\)</span>, 我们把它改为 <span
+class="math inline">\(X\)</span>, 也就是对应了态射 <span
+class="math inline">\(p_1\)</span>. 我们继续来看定义.</p>
+<h3 id="definition-3.1-base-change">Definition 3.1 (base-change)</h3>
+<p>对于文章开头我们需要的证明的函子 <span class="math inline">\(f^* :
+C/Y \to C/X\)</span>, 我们通过 <span class="math inline">\(f^*\)</span>
+得到的态射, 就是某个对象 <span class="math inline">\(f \in C/Y\)</span>
+对应的 base change.</p>
+<p>没错, 我们终于回到了正题, 如何推导出 <span
+class="math inline">\(f^*\)</span> 呢?</p>
+<h2 id="f"><span class="math inline">\(f^*\)</span></h2>
+<p>在讨论这个证明之前, 我们需要讨论一个概念, 什么是范畴的 equivalence
+(全等)?</p>
+<h3 id="intuition-4.1-equivalence">Intuition 4.1 (equivalence)</h3>
+<p>在这里我们不会给出准确的定义, 准确的定义要求 equivalence 是一个 pair,
+它包含两个所讨论范畴的 section 和 retraction,
+我们这里不深究每个概念.</p>
+<p>这里需要一个直觉, 你可以简单理解为, 两个范畴 <span
+class="math inline">\(C\)</span> 和 <span
+class="math inline">\(D\)</span> 之间有相互的函子, 一个对象 <span
+class="math inline">\(X \in C\)</span> 它能够通过相互间的函子映射到对面,
+再映射回自己, 而其他对象如 <span class="math inline">\(Y \in D\)</span>
+也应如此. 这时, 我们说 <span class="math inline">\(C \equiv D\)</span>,
+范畴 <span class="math inline">\(C\)</span> 和 <span
+class="math inline">\(D\)</span> 是 equivalent 的.</p>
+<h3 id="lemma-4.2-cx-equiv-cyf">Lemma 4.2 (cx-equiv-cyf)</h3>
+<p>证明 <span class="math inline">\(f^*\)</span> 之前,
+我们需要证明一个引理:</p>
+<p><span class="math display">\[
+C/X \equiv (C/Y)_{/f}
+\]</span></p>
+<p>简单来说, 就是我们构造出 <span
+class="math inline">\((C/Y)_{/f}\)</span> 这样的范畴, 它将范畴 <span
+class="math inline">\(C/Y\)</span> 中抽出对象 <span
+class="math inline">\(f\)</span>, 再进行一次 slicing (切片) 的操作;
+这样的范畴和 <span class="math inline">\(C/X\)</span> 是全等的.</p>
+<p>你可能在想, <span class="math inline">\(C/Y\)</span>
+中的对象都是态射, 那么 <span class="math inline">\((C/Y)_{/f}\)</span>
+中的对象就是指向 <span class="math inline">\(f\)</span> 的态射咯?
+那岂不是态射的态射? 这样的东西长什么样子呢?</p>
+<p>根据 <a href="#definition-2.1-slice-category">Definition 2.1
+(slice-category)</a>, 不难发现, <span
+class="math inline">\((C/Y)_{/f}\)</span> 中的对象其实就是那个 <span
+class="math inline">\(g\)</span>, 即:</p>
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNCxbMCwyLCJYIl0sWzIsMCwiWCciXSxbMiwyLCJZIl0sWzQsMCwiWCcnIl0sWzAsMSwiZyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImRhc2hlZCJ9fX1dLFswLDIsImYiXSxbMywyXSxbMCwzLCJnJyIsMCx7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6ImRhc2hlZCJ9fX1dLFsxLDJdXQ==&amp;embed" width="688" height="432" style="border-radius: 8px; border: none;">
+</iframe>
+<p>这里的 <span class="math inline">\(g\)</span> 和 <span
+class="math inline">\(g&#39;\)</span> 都是 <span
+class="math inline">\((C/Y)_{/f}\)</span> 的对象.</p>
+<iframe class="quiver-embed" src="https://q.uiver.app/?q=WzAsNixbMiwyLCJYIl0sWzQsMCwiWCciXSxbNCwyLCJZIl0sWzYsMCwiWCcnIl0sWzIsMCwiWCBcXHRpbWVzX1kgWCciXSxbMCwyLCJYIFxcdGltZXNfWSBYJyciXSxbMCwxLCJnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV0sWzAsMiwiZiJdLFszLDJdLFswLDMsImcnIiwwLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV0sWzEsMl0sWzQsMV0sWzQsMF0sWzUsMF0sWzQsNSwiIiwxLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV0sWzEsMywiIiwxLHsic3R5bGUiOnsiYm9keSI6eyJuYW1lIjoiZGFzaGVkIn19fV1d&amp;embed" width="600" height="400" style="border-radius: 8px; border: none;">
+</iframe>
 
     </article>
   </main>
