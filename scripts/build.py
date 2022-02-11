@@ -8,7 +8,6 @@ from multiprocessing import Process, JoinableQueue, Value
 _INPUT_PATHS = [
     Path("."),
     *Path("post").iterdir(),
-    *(Path("post") / "legacy").iterdir(),
 ]
 
 
@@ -60,7 +59,7 @@ def main():
         "--force", "-f", action="store_true", help="Force building all posts",
     )
     p.add_argument(
-        "--jobs", "-j", type=int, default=4, help="Number of jobs",
+        "--jobs", "-j", type=int, default=8, help="Number of jobs",
     )
     p.add_argument("--input-path", "-i", help="A single path as input")
 

@@ -13,14 +13,19 @@ header, main, footer {
   width: 90%;
   margin: 0 auto;
 }
-  header, footer {
+  header {
     display: flex;
     justify-content: center;
     align-items: baseline;
   }
+  footer {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
   footer { margin: 3em auto; }
   @media screen and (min-width: 640px) {
-    header, main, footer { width: 40%; }
+    header, main, footer { width: 50%; }
   }
 
 img { max-width: 100%; }
@@ -33,7 +38,7 @@ html, body {
 
 a {
   text-decoration: none;
-  color: darkred;
+  color: #002fa7; /* International Klein Blue */
 }
 
 blockquote {
@@ -43,13 +48,11 @@ blockquote {
 header a {
   color: black;
 }
-header > h1 {
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: xx-large;
-  letter-spacing: 1em;
-}
+  header > h1 {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: xx-large;
+  }
 
 footer {
   font-style: italic;
-  font-weight: bold;
 }

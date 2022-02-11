@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Internal Blog Theory | Anqur</title>
+  <link rel="stylesheet" href="/style/post.css">
+  <link rel="stylesheet" href="/scripts/highlight.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+  <header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+  </header>
+
+  <main>
+    <article>
+      <h1 id="base-change-如何推导-f">Base change, 如何推导 <span
+class="math inline">\(f^*\)</span></h1>
+<p>2022-02-11 | <a href="/#category-theory">Category theory</a></p>
+<hr />
+<h2 id="啥是-base-change">啥是 base change</h2>
+<p>Base change (变基) 是范畴论里很有趣的一个玩意儿, 顾名思义,
+就是能够将基底变换的一种结构, 也许你现在听的还很懵圈,
+但这篇文章的核心目的如下:</p>
+<blockquote>
+<p>对于一个范畴 <span class="math inline">\(C\)</span>, 有 <span
+class="math inline">\(f : X \to Y\)</span> 是 <span
+class="math inline">\(C\)</span> 中的态射, 如果有一个沿着 (along)
+这个态射 <span class="math inline">\(f\)</span> 的 pullback (拉回),
+那么可以推导出 slice category (切片范畴) 上的函子 <span
+class="math inline">\(f^*\)</span>:</p>
+<p><span class="math display">\[f^* : C/Y \to C/X\]</span></p>
+</blockquote>
+<p>这篇文章的目的就是要证明这个定理, 搞清楚 <span
+class="math inline">\(f^*\)</span> 是如何推导出来的. 当然,
+你现在一定更懵逼了. 要证明这个定理,
+我们首先要理解以下几个概念及定义:</p>
+<ul>
+<li>什么是 pullback</li>
+<li>什么是沿着 <code>f</code> 的 pullback</li>
+<li>什么是 slice category</li>
+<li>什么是 base change</li>
+</ul>
+<p>接着, 我们就能进一步给出证明了. 让我们沿着这几个问题出发.</p>
+<h2 id="pullback">Pullback</h2>
+<p>Pullback 又称为 fiber product (纤维乘积), 它在直觉上像是一种表达
+equality (相等性) 的东东, 我们在后文会讨论到这一直觉. 但请注意,
+在类型论中 identity, equivalence, equality 等概念皆有不同的含义,
+其对应的 categorical semantics (范畴语义) 上表达了不同的数学对象,
+这些含义粗略地统称 "sameness" (相等), 需要严格区分开来.</p>
+<h3 id="definition-1.1">Definition 1.1</h3>
+<p>Pullback 就是长得像以下交换图的一个 limit (极限):</p>
+
+    </article>
+  </main>
+
+  <footer>
+    <p>
+      Report bugs, or you have better ideas:
+      <a href="//github.com/anqurvanillapy/anqurvanillapy.github.io/issues">Issues</a>.
+    </p>
+    <p>All posts follow the <code>cc-by-4.0</code> license.</p>
+  </footer>
+</body>
+
+</html>

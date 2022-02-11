@@ -1,4 +1,4 @@
-# Blog
+# My personal blog
 
 Too long, didn't write.
 
@@ -13,31 +13,37 @@ Create an HTTP server for debugging, I prefer Python's handy `http.sever`.
 
 ```bash
 $ python -m http.server
+# Serving port 8000...
 ```
 
 You have plenty of ways to build the blog:
 
 * Build everything:
-```bash
-# Don't touch the already generated posts.
-$ python ./scripts/build.py
-# Focibly all posts.
-$ python ./scripts/build.py -f
-```
+
+    ```bash
+    # Don't touch the already generated posts.
+    $ python ./scripts/build.py
+    # Focibly all posts.
+    $ python ./scripts/build.py -f
+    ```
+
 * Build the directory of a specific post:
-```bash
-# Build it, if it's not generated yet.
-$ python ./scripts/build.py -i ./post/20000101-xxx/
-# Build it forcibly.
-$ python ./scripts/build.py -i ./post/20000101-xxx/ -f
-```
+
+    ```bash
+    # Build it, if it's not generated yet.
+    $ python ./scripts/build.py -i ./post/20000101-xxx/
+    # Build it forcibly.
+    $ python ./scripts/build.py -i ./post/20000101-xxx/ -f
+    ```
+
 * Build more concurrently:
-```bash
-# By default, build with 4 jobs.
-$ python ./scripts/build.py
-# Let's goooooooooooo.
-$ python ./scripts/build.py -j 16
-```
+
+    ```bash
+    # By default, build with 8 jobs.
+    $ python ./scripts/build.py
+    # Let's goooooooooooo.
+    $ python ./scripts/build.py -j 16
+    ```
 
 ## Notes
 
