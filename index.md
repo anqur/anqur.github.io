@@ -16,4 +16,4 @@ My [CV](post/cv).
 
 ## Category theory
 
-* [Base change, 如何导出 $f^*$](post/2022-02-11-base-change-functor/index.html)
+* [Base change, 如何推导 $f^*$](post/2022-02-11-base-change-functor/index.html)

@@ -1,6 +1,6 @@
-# My personal blog
+# Internal Blog Theory
 
-Too long, didn't write.
+My personal blog.
 
 ## Dependency
 
@@ -31,9 +31,9 @@ You have plenty of ways to build the blog:
 
     ```bash
     # Build it, if it's not generated yet.
-    $ python ./scripts/build.py -i ./post/20000101-xxx/
+    $ python ./scripts/build.py -i ./post/2000-01-01-xxx/
     # Build it forcibly.
-    $ python ./scripts/build.py -i ./post/20000101-xxx/ -f
+    $ python ./scripts/build.py -i ./post/2000-01-01-xxx/ -f
     ```
 
 * Build more concurrently:
