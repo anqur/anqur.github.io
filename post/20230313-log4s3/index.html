@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Internal Blog Theory | Anqur</title>
+  <link rel="stylesheet" href="/style/post.css">
+  <link rel="stylesheet" href="/scripts/highlight.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+  <header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+  </header>
+
+  <main>
+    <article>
+      <h1 id="s3-as-an-append-only-log-store">S3 as an Append-only Log
+Store</h1>
+<ul>
+<li>2023-03-13</li>
+<li>💼</li>
+</ul>
+<hr />
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">想法复杂度</th>
+<th style="text-align: center;">实现难度</th>
+<th style="text-align: center;">是否已实现</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">4/5</td>
+<td style="text-align: center;">4/5</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<p>试想有这样一个用户的场景:</p>
+<blockquote>
+<p>用户有个服务集群, 每一个服务实例都往本地某个目录或是标准输出打印日志,
+但是它想在不改变代码的情况下, 将打印的日志上传到 S3 怎么办?</p>
+</blockquote>
+<p>这个场景中, 用户服务的眼里 S3 成了一个 append-only 的日志存储,
+或者说, S3 成为了 Go 中 <a
+href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a>
+接口的实现.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">package</span> io</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Writer <span class="kw">interface</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    Write<span class="op">(</span>p <span class="op">[]</span><span class="dt">byte</span><span class="op">)</span> <span class="op">(</span>n <span class="dt">int</span><span class="op">,</span> err <span class="dt">error</span><span class="op">)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>在不新增中间件的情况下如何解决这个问题呢?</p>
+<h2 id="替换用户的日志文件">替换用户的日志文件</h2>
+<p>用户的日志文件可能存放在某个目录, 也可能只是简单的 stdout,
+那么静态地替换日志文件 (用户配置新的日志路径, 重启一下服务进程),
+或者是动态地替换 (比如用 <code>dup2</code> 拷贝一下文件描述符) 都是比较
+trivial 的, 当然静态的做法安全一些些.</p>
+<p>那么具体是拿什么文件去替换呢? 没错! 我们可以用 UNIX domain socket,
+将用户写文件的行为转换成本地进程间的 TCP 通信,
+在另一个进程中处理用户的日志上传, 也就是业务 sidecar 的模式.</p>
+<h2 id="s3-中存放日志的形式是怎样的">S3 中存放日志的形式是怎样的?</h2>
+<h3 id="尝试-1-one-log-line-per-object">尝试 #1: One log line per
+object</h3>
+<ul>
+<li>一条日志即一个对象</li>
+<li>一个日志文件即一个 bucket</li>
+</ul>
+<p>是的, 这个做法一听就不是很靠谱, 虽然一个 bucket
+中的对象数貌似是不受限的, 但是即使是有一个定时任务每天去将一个 bucket
+里所有的对象合并成一个大对象, <a
+href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html">ListObjectsV2</a>
+接口会非常非常缓慢, 定时任务得跑相当长的时间. 并且一个用户的 bucket
+数往往有限, 也可能是个问题.</p>
+<h3 id="尝试-2-one-log-line-per-part">尝试 #2: One log line per
+part</h3>
+<ul>
+<li>使用 multipart upload 机制, 一条日志即一个 part</li>
+<li>当 upload part 写到 10,000 个的时候, commit multipart upload</li>
+<li>一个日志文件即一个 bucket</li>
+</ul>
+<p>这种方案下, multipart object 就是日志上传的写缓冲,
+那么一个对象的大小就很容易达到 10KiB 的量级, 并可缩小 bucket
+内对象的数量. 但是, 由于 part 数量过多, commit
+的时候目测会卡顿非常长的时间, buffer 的效果就非常的不明显,
+甚至可能会拖垮 sidecar 的系统资源 (比如 pthread 没法 clone
+新的线程).</p>
+<h3 id="最终方案-write-buffer">最终方案: Write buffer</h3>
+<p>既然如此, 那么其实就应该像 <a
+href="https://github.com/natefinch/lumberjack">lumberjack</a>
+所倡导的那样, 既然日志都要上传到云端, 那么 <em>按天 rotate 日志</em>
+就是一个伪需求, 即 sidecar 也应该直接使用一个内存中的 write buffer,
+如写满 15MiB 后上传到 S3 就是了, 这样实现起来也非常地简单.</p>
+<p>甚至每一个 buffer 的上传可以用 multipart upload,
+这样一个日志文件理论上就有 <code>15MiB * 10,000 ~= 146GiB</code> 的大小,
+这个其实也是这篇 <a
+href="https://stackoverflow.com/a/47580108/7248733">Stack Overflow
+答案</a> 的推荐. 用户还可以设定 bucket lifecycle
+自动过期掉不用的日志.</p>
+<h2 id="如何处理日志-rotate">如何处理日志 rotate?</h2>
+<p>如果用户本身带有日志 rotate 的功能, 单监听一个文件铁定是不够的,
+这个时候还是只能借助如 <a
+href="https://github.com/hanwen/go-fuse">go-fuse</a> 项目去 mount
+一个本地的文件系统, 识别用户的拷贝或者 symlink 的行为,
+转换成日志上传到一个新的对象的逻辑; 或者干脆就不修改目标的日志对象了,
+无视掉用户的 拷贝/symlink 操作即可.</p>
+<h2 id="后续">后续</h2>
+<p>实现整个想法, 甚至是 PoC 应该会很花时间, 咱就先不折腾了.</p>
+
+    </article>
+  </main>
+
+  <footer>
+    <p>
+      Report bugs, or you have better ideas:
+      <a href="//github.com/anqurvanillapy/anqurvanillapy.github.io/issues">Issues</a>.
+    </p>
+    <p>All posts follow the <code>cc-by-4.0</code> license.</p>
+  </footer>
+</body>
+
+</html>
