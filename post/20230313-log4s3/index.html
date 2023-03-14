@@ -116,6 +116,17 @@ href="https://github.com/hanwen/go-fuse">go-fuse</a> 项目去 mount
 无视掉用户的 拷贝/symlink 操作即可.</p>
 <h2 id="后续">后续</h2>
 <p>实现整个想法, 甚至是 PoC 应该会很花时间, 咱就先不折腾了.</p>
+<p>业界其他相关的产品有:</p>
+<ul>
+<li><a href="https://aws.amazon.com/kinesis/firehose/">Amazon Kinesis
+Data Firehose</a>, 一款 ETL 的产品, 背后可支持 S3</li>
+<li><a href="https://aws.amazon.com/cn/ebs/">Amazon Elastic Block
+Store</a>, 即块存储, 这个接近于我司内部的 networked filesystem
+的解决方案, 我觉得不是很优雅, 引进了太多中间件</li>
+<li>Alibaba OSS 支持 <a
+href="https://www.alibabacloud.com/help/en/object-storage-service/latest/upload-files-append-upload">append
+upload</a> 的功能</li>
+</ul>
 
     </article>
   </main>

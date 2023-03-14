@@ -85,3 +85,16 @@ sidecar 也应该直接使用一个内存中的 write buffer, 如写满 15MiB �
 ## 后续
 
 实现整个想法, 甚至是 PoC 应该会很花时间, 咱就先不折腾了.
+
+业界其他相关的产品有:
+
+* [Amazon Kinesis Data Firehose], 一款 ETL 的产品, 背后可支持 S3
+* [Amazon Elastic Block Store], 即块存储, 这个接近于我司内部的 networked filesystem 的解决方案, 我觉得不是很优雅,
+  引进了太多中间件
+* Alibaba OSS 支持 [append upload] 的功能
+
+[Amazon Kinesis Data Firehose]: https://aws.amazon.com/kinesis/firehose/
+
+[Amazon Elastic Block Store]: https://aws.amazon.com/cn/ebs/
+
+[append upload]: https://www.alibabacloud.com/help/en/object-storage-service/latest/upload-files-append-upload

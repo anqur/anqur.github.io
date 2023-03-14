@@ -1,6 +1,6 @@
 # `~$ cat README`
 
-Hi, I'm [Anqur](//github.com/anqurvanillapy), a daytime CRUD boy and midnight PL enthusiast.
+Hi, I'm [Anqur](https://github.com/anqurvanillapy), a daytime CRUD boy and midnight PL enthusiast.
 
 博客包含的话题:
 
@@ -16,4 +16,5 @@ Hi, I'm [Anqur](//github.com/anqurvanillapy), a daytime CRUD boy and midnight PL
 
 ## 💼 工作中的 ideas
 
-* 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet/)
+* 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
+* 2023-03-13 [S3 as an Append-only Log Store](/post/20230313-log4s3)
