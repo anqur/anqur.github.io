@@ -64,8 +64,9 @@ href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a>
 <h2 id="替换用户的日志文件">替换用户的日志文件</h2>
 <p>用户的日志文件可能存放在某个目录, 也可能只是简单的 stdout,
 那么静态地替换日志文件 (用户配置新的日志路径, 重启一下服务进程),
-或者是动态地替换 (比如用 <code>dup2</code> 拷贝一下文件描述符) 都是比较
-trivial 的, 当然静态的做法安全一些些.</p>
+或者是动态地替换 (比如用 <a
+href="https://linux.die.net/man/2/dup2"><code>dup2</code></a>
+拷贝一下文件描述符) 都是比较 trivial 的, 当然静态的做法安全一些些.</p>
 <p>那么具体是拿什么文件去替换呢? 没错! 我们可以用 UNIX domain socket,
 将用户写文件的行为转换成本地进程间的 TCP 通信,
 在另一个进程中处理用户的日志上传, 也就是业务 sidecar 的模式.</p>
