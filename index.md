@@ -1,18 +1,11 @@
-# `~$ cat README`
+# Hi
 
-Hi, I'm [Anqur](https://github.com/anqurvanillapy), a daytime CRUD boy and midnight PL enthusiast.
+这里是 [Anqur], 也可以叫我 *安可*, *俺去*, *aqq*. 我喜欢编程语言, 日常与分布式系统打交道, 平常弹一些贝斯.
 
-博客包含的话题:
+我的 [工作简历].
 
-* 基础的 CRUD 东东
-* 编程语言理论
-* 范畴论
-* 有时会讲些 Go 语言的玩意儿
-* 一些些脏脏 ideas
-
-..., etc.
-
-我的 [简历](post/cv).
+[Anqur]: https://github.com/anqurvanillapy
+[工作简历]: post/cv
 
 ## 💼 工作中的 ideas
 
