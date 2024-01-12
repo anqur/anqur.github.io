@@ -1,5 +1,3 @@
-/* General style */
-
 html, body {
   width: 100%;
   height: 100%;
@@ -33,12 +31,22 @@ img { max-width: 100%; }
 /* Custom style */
 
 html, body {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Tahoma, Verdana, sans-serif;
 }
 
 a {
   text-decoration: none;
   color: #002fa7; /* International Klein Blue */
+}
+
+table {
+  border-spacing: 0;
+}
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+td {
+    padding: .5em 1em;
 }
 
 blockquote {
