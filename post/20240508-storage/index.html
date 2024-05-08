@@ -266,7 +266,7 @@ key...</p>
 </ul>
 <p>这个时候, 我们的存储提供这种概念的服务:</p>
 <ul>
-<li><strong>File storage/文件系统</strong>, 或者 <strong>network
+<li><strong>File storage/文件存储</strong>, 或者 <strong>network
 filesystem/网络文件系统</strong></li>
 </ul>
 <h3 id="文件存储的接口-linux-vfs">文件存储的接口: Linux VFS</h3>
@@ -567,13 +567,13 @@ backup 的切换, 当主服务挂了, nginx 自动将用户流量导入到备服
 href="https://github.com/hashicorp/raft/blob/49bd61b66666fa76cb23fa81897e350f6e9b75de/api.go#L488">创建一个
 Raft 节点</a>, 需要提供以下接口的实现:</p>
 <ul>
-<li>log store: WAL 要存哪里, 一般可以存到本地文件, Hashicorp
+<li>Log store: WAL 要存哪里, 一般可以存到本地文件, Hashicorp
 有提供可用的实现</li>
-<li>stable store: Raft 元数据 (比如 term) 要存哪里,
+<li>Stable store: Raft 元数据 (比如 term) 要存哪里,
 一般可以存到一个本地的 KV store, Hashicorp 有提供可用的实现</li>
-<li>snapshot store: 快照要存哪里, 一般可以存到本地文件, Hashicorp
+<li>Snapshot store: 快照要存哪里, 一般可以存到本地文件, Hashicorp
 有提供可用的实现</li>
-<li>transport: 集群的各个节点信息以及对应的网络通道, Hashicorp
+<li>Transport: 集群的各个节点信息以及对应的网络通道, Hashicorp
 有提供可用的实现</li>
 <li>FSM (finite state machine/状态机): WAL 发送过来了以后,
 要怎么把操作重现一遍的逻辑, 这里就是业务逻辑了</li>
@@ -595,8 +595,88 @@ API 或者 RPC, 这个也需要自己简单封装一下...</li>
 只要牺牲一定的一致性</li>
 </ul>
 <h3
-id="scalability-主服务就一台-磁盘顶多几百-tib-不够用啊...-分片-partitioning">Scalability:
-主服务就一台, 磁盘顶多几百 TiB 不够用啊... 分片 (partitioning)!</h3>
+id="scale-一台机器磁盘顶多几十-tib-不够用啊...-分片-partitioning-multi-raft">⚖️
+Scale: 一台机器磁盘顶多几十 TiB 不够用啊... 分片 (partitioning)!
+Multi-Raft!</h3>
+<p>我们整个集群只有一台主服务是可以拿来写数据的,
+那这个服务的磁盘容量就成为瓶颈了, 我们要实现一个能存放几百 PiB
+级别的存储, 纵向扩容 (scale up, 即提高机器配置)
+是无论如何都没法实现这个目标的, 所以我们要想一个能横向扩容的解决方案.
+这个方案就是数据分片:</p>
+<blockquote>
+<p>把数据拆分到不同的服务上去!</p>
+</blockquote>
+<p>这里我们需要关心的问题就是:</p>
+<ol type="1">
+<li>分片的逻辑是什么? 按照哈希算法随机分? 还是按照某种范围来分?</li>
+<li>分片的触发条件是什么? 什么情况下需要把数据分到其他的服务上去?</li>
+<li>当分片大小不均匀的情况 (比如服务 A 有 100 TiB 数据, 服务 B 只有 1
+GiB) 该怎么办?</li>
+</ol>
+<p>这里其实很难有一个万能的答案, 可能的做法是:</p>
+<ol type="1">
+<li><strong>基于数字范围来分片</strong>:
+<ul>
+<li>比如我们分配给用户的 client ID 虽然可能是随机的一个字符串,
+但是我们可以根据用户加入到我们服务中的顺序作为标准, 这个顺序可以是 MySQL
+的自增 ID 来确定, 这样, 我们可以把 0~99 的用户分到
+<code>parition-0</code>, 把 100~199 的用户分到 <code>partition-1</code>,
+以此类推</li>
+<li>但是有可能用户之间的容量差异也很大, 那我们以同样的原则, 往下再按照
+bucket 名称来分片, 而 bucket 同样也可以按照创建的顺序来分片;
+这里值得注意的是, 很多云服务厂商把创建 bucket 看作是很重的一个操作,
+不应该轻易删除 bucket 或者创建, 并且 bucket 的数量也是严格控制的,
+有了这种限制以后, 按 bucket 分片才有它的可能性, 不然就过于灵活了</li>
+<li>综合以上, client ID 和 bucket 在数据库里可以做一个联合索引,
+然后进行排序, 前 100 的 client-bucket pair 分配到
+<code>partition-0</code>, 后 100 个 pair 分配到
+<code>partition-1</code>, 以此类推</li>
+</ul></li>
+<li>分片触发的条件, 此时按照以上定义, 就是看是否用户创建了新的 bucket
+以后, 超过了分片的大小 (即 100), 超过了的话就要创建全新的分片了</li>
+<li>在这种情况下, 我们没办法做数据的均衡 (rebalance) 了</li>
+</ol>
+<p>还有一种做法就是:</p>
+<ol type="1">
+<li><strong>基于 object key 的字节序来分片</strong>:
+<ul>
+<li>我们将 client ID, bucket, object key 三者组合成一个联合字符串 key,
+用 tree map 的方式 (比如存到本地的 LSM-based KV store 中) 保存起来,
+value 则对应的是对象数据的一个本地磁盘路径</li>
+</ul></li>
+<li>假设对象的最大大小是 5 MiB, 那我们设定一个分片的大小到了 5 GiB
+就要触发分片 (一个分片最多存个 1024 个对象),
+新的数据要写到新全新的分片去 (也叫 split, 分裂)</li>
+<li>当一个分片接收到删除请求, 并监测到分片从历史上某个很大的值删除到小于
+1 GiB 时, 就要考虑做均衡了, 把这个分片合并 (merge) 到其他分片去</li>
+</ol>
+<p>有趣的是, 这样的分片方式和 TiKV 是类似的. TiKV 的默认分区大小是 96
+MiB, 超过会触发 split, 至于 merge 则有一堆的内部条件, 可以参考 TiKV
+的文档做详细的设计.</p>
+<p>另外, 我们还可以使用 multi-Raft 加监测服务 (agent, worker, runner)
+的方式, 去实现整个算法流程的可靠性. 假设我们有 4 台对象存储服务:</p>
+<ul>
+<li>Split 拆分新分片的流程:
+<ul>
+<li>我们每个分片都是一个新的 Raft node, 三个实例随机分配到 4
+台机器的其中 3 台</li>
+<li>监测服务是一个异步运行的本地服务, 隔一段时间, 它发现分片过大,
+或者是主动接收到 split 请求后, 开启 split 任务</li>
+<li>分片 leader 和 follower 收到任务, 拆出新的 Raft node,
+将超出阈值部分的数据拷贝到新的组</li>
+<li>监测服务按 4 台机器的容量权重, 将这个新的 Raft group 分配 (schedule)
+到容量最空闲的 3 台</li>
+</ul></li>
+<li>Merge 合并旧分片的流程同理, 先把数据拷贝到对应的机器上, 再和本地的
+Raft group 进行数据拷贝, 最后删除自身</li>
+</ul>
+<p>所以 multi-Raft 并不是一种新的算法, 它只是一种 Raft
+结合数据分片的解决方案.</p>
+<p>我们注意到, 这些分片的做法是非常非常 <strong>业务强相关</strong> 的,
+没有一个完美的银弹算法,
+这里也通常是系统最容易出问题也最难开发的位置.</p>
+<h3 id="成本-成本-成本-我做冗余的钱谁来还给我啊...-ec">💸 成本, 成本,
+成本: 我做冗余的钱谁来还给我啊... EC!</h3>
 <p>TODO</p>
 
     </article>
