@@ -671,13 +671,91 @@ MiB, 超过会触发 split, 至于 merge 则有一堆的内部条件, 可以参�
 Raft group 进行数据拷贝, 最后删除自身</li>
 </ul>
 <p>所以 multi-Raft 并不是一种新的算法, 它只是一种 Raft
-结合数据分片的解决方案.</p>
-<p>我们注意到, 这些分片的做法是非常非常 <strong>业务强相关</strong> 的,
-没有一个完美的银弹算法,
+结合数据分片的解决方案. 但是, 使用了 multi-Raft 之后,
+用户就很难通过询问一个服务而知晓要访问的数据在哪个位置了, 比如我们有 100
+台机器, 一个分片只有 3 个节点, 那么我们就有 97% 的概率访问到错误的机器,
+错误机器对你想要访问的目标机器的位置是并不知晓的.</p>
+<p>为了解决这个问题, 就必须要引入一个新的组件: <strong>PD</strong>
+(placement driver, coordinator, orchestrator, manager). PD
+记录了分片的所在位置, 用户可以通过输入对象的信息, 获取机器的地址和分片
+ID.</p>
+<p>PD 组件怎么开发呢? 其实 PD 就是一个最简单的分布式 KV 存储, 用 Raft 加
+LSM KV store 就能实现一个能跑的 PD 服务. 需要注意的是,
+上文提到的分片监测服务, 即负责分片的分裂和合并的组件, 在每次发布 task
+之前需要先记录到 PD, 即 PD 成为了整个 multi-Raft 集群的管理者 (PD
+这名字瞬间就不好听了).</p>
+<p>简单的 PD 接口定义:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">package</span> pd</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="op">(</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    BucketName <span class="dt">string</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    ObjectKey  <span class="dt">string</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="op">(</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ServerAddress 机器地址, 形如 http://127.0.0.1:8080</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    ServerAddress <span class="dt">string</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    PartitionID   <span class="dt">string</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Migration 迁移计划, 分片要从哪里迁移到哪个机器上去.</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    Migration <span class="kw">struct</span><span class="op">{</span> From<span class="op">,</span> To ServerAddress <span class="op">}</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="op">)</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> PD <span class="kw">interface</span> <span class="op">{</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Get 获取分片的位置.</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    Get<span class="op">(</span>bucket BucketName<span class="op">,</span> key ObjectKey<span class="op">)</span> <span class="op">(</span>ServerAddress<span class="op">,</span> PartitionID<span class="op">,</span> <span class="dt">error</span><span class="op">)</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 分片分裂需要以下接口.</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Split 将老分片 *原地* (ServerAddress 不变) 切割出新的分片.</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    Split<span class="op">(</span>id PartitionID<span class="op">)</span> <span class="op">(</span>newID PartitionID<span class="op">,</span> err <span class="dt">error</span><span class="op">)</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Rebalance 将分片均衡到其他机器上去.</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    Rebalance<span class="op">(</span>id PartitionID<span class="op">)</span> <span class="op">([]*</span>Migration<span class="op">,</span> <span class="dt">error</span><span class="op">)</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 分片合并需要以下接口.</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Migrate 强制将分片往其他机器上迁移.</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    Migrate<span class="op">(</span>id PartitionID<span class="op">,</span> plan <span class="op">[]*</span>Migration<span class="op">)</span> <span class="dt">error</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Merge *原地* (ServerAddress 要相同) 合并分片.</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>    Merge<span class="op">(</span>smaller<span class="op">,</span> bigger PartitionID<span class="op">)</span> <span class="dt">error</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>这里有个小问题, TiKV 里的 PD 是负责分配 TSO (timestamp oracle)
+用做分布式事务 ID 的, 为什么我们这里不用呢? 这个问题很好回答,
+我们目前还没有分布式事务呢.</p>
+<p>至此我们注意到, 分片算法其实是非常非常 <strong>业务强相关</strong>
+的, 没有一个完美的银弹算法,
 这里也通常是系统最容易出问题也最难开发的位置.</p>
+<h3
+id="s3-规范-别人帮我们写好了-sdk-但是并不能和-pd-交互捏...-s3-网关">🙅
+S3 规范: 别人帮我们写好了 SDK, 但是并不能和 PD 交互捏... S3 网关!</h3>
+<p>目前我们的架构变成了这样了:</p>
+<pre class="plaintext"><code>           Locate   +----+   Rebalance  +--------+
+    User ---------&gt; | PD |+ &lt;---------&gt; | Server |+
+     ^              +----+|       +---&gt; +--------+|
+     |               +----+       |      +--------+
+     |               3 nodes      |    many many nodes
+     +----------------------------+
+       PutObject, GetObject, etc.</code></pre>
+<p>但是用户没办法用官方的 S3 SDK 分别和我们的 PD 与 server 交互,
+我们只能封装一个 S3 兼容的网关去做这件事情了,
+所以架构需要演变成这样:</p>
+<pre class="plaintext"><code>            +---------+   Locate  +----+   Rebalance  +--------+
+S3 SDK &lt;--&gt; | Gateway |+ -------&gt; | PD |+ &lt;---------&gt; | Server |+
+            +---------+| &lt;        +----+|           &gt; +--------+|
+             +---------+   \       +----+         /    +--------+
+           many many nodes  \      3 nodes       /   many many nodes
+                             \__________________/
+                           PutObject, GetObject, etc.</code></pre>
+<p>这个网关组件是无状态的, 可以随意横向扩缩容.
+虽然引入这个新组件是很自然的事情,
+但是这个协议转换本身还是浪费了很多平台自己的机器资源的 (网络带宽),
+可千万不要因为多买了几台机器就被裁了捏.</p>
 <h3 id="成本-成本-成本-我做冗余的钱谁来还给我啊...-ec">💸 成本, 成本,
 成本: 我做冗余的钱谁来还给我啊... EC!</h3>
-<p>TODO</p>
+<p>上文有提到过, 我们的存储成本占了整个容量的 66%, 也就是说, 我们买了
+100 TiB 的磁盘, 结果有 66 TiB 的数据是完全用做冗余复制的,
+这太太太爆裂了, 烧钱烧爆喽. 所以我们要 TODO</p>
 
     </article>
 </main>

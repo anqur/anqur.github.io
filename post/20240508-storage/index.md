@@ -542,10 +542,93 @@ WAL 太多的话, 我们最好是用一种手段, 将 WAL 序号对应的那些�
     * 监测服务按 4 台机器的容量权重, 将这个新的 Raft group 分配 (schedule) 到容量最空闲的 3 台
 * Merge 合并旧分片的流程同理, 先把数据拷贝到对应的机器上, 再和本地的 Raft group 进行数据拷贝, 最后删除自身
 
-所以 multi-Raft 并不是一种新的算法, 它只是一种 Raft 结合数据分片的解决方案.
+所以 multi-Raft 并不是一种新的算法, 它只是一种 Raft 结合数据分片的解决方案. 但是, 使用了 multi-Raft 之后,
+用户就很难通过询问一个服务而知晓要访问的数据在哪个位置了, 比如我们有 100 台机器, 一个分片只有 3 个节点, 那么我们就有 97%
+的概率访问到错误的机器, 错误机器对你想要访问的目标机器的位置是并不知晓的.
 
-我们注意到, 这些分片的做法是非常非常 **业务强相关** 的, 没有一个完美的银弹算法, 这里也通常是系统最容易出问题也最难开发的位置.
+为了解决这个问题, 就必须要引入一个新的组件: **PD** (placement driver, coordinator, orchestrator, manager). PD
+记录了分片的所在位置, 用户可以通过输入对象的信息, 获取机器的地址和分片 ID.
+
+PD 组件怎么开发呢? 其实 PD 就是一个最简单的分布式 KV 存储, 用 Raft 加 LSM KV store 就能实现一个能跑的 PD 服务. 需要注意的是,
+上文提到的分片监测服务, 即负责分片的分裂和合并的组件, 在每次发布 task 之前需要先记录到 PD, 即 PD 成为了整个 multi-Raft
+集群的管理者 (PD 这名字瞬间就不好听了).
+
+简单的 PD 接口定义:
+
+```go
+package pd
+
+type (
+	BucketName string
+	ObjectKey  string
+)
+
+type (
+	// ServerAddress 机器地址, 形如 http://127.0.0.1:8080
+	ServerAddress string
+	PartitionID   string
+
+	// Migration 迁移计划, 分片要从哪里迁移到哪个机器上去.
+	Migration struct{ From, To ServerAddress }
+)
+
+type PD interface {
+	// Get 获取分片的位置.
+	Get(bucket BucketName, key ObjectKey) (ServerAddress, PartitionID, error)
+
+	// 分片分裂需要以下接口.
+
+	// Split 将老分片 *原地* (ServerAddress 不变) 切割出新的分片.
+	Split(id PartitionID) (newID PartitionID, err error)
+	// Rebalance 将分片均衡到其他机器上去.
+	Rebalance(id PartitionID) ([]*Migration, error)
+
+	// 分片合并需要以下接口.
+
+	// Migrate 强制将分片往其他机器上迁移.
+	Migrate(id PartitionID, plan []*Migration) error
+	// Merge *原地* (ServerAddress 要相同) 合并分片.
+	Merge(smaller, bigger PartitionID) error
+}
+
+```
+
+这里有个小问题, TiKV 里的 PD 是负责分配 TSO (timestamp oracle) 用做分布式事务 ID 的, 为什么我们这里不用呢? 这个问题很好回答,
+我们目前还没有分布式事务呢.
+
+至此我们注意到, 分片算法其实是非常非常 **业务强相关** 的, 没有一个完美的银弹算法, 这里也通常是系统最容易出问题也最难开发的位置.
+
+### 🙅 S3 规范: 别人帮我们写好了 SDK, 但是并不能和 PD 交互捏... S3 网关!
+
+目前我们的架构变成了这样了:
+
+```plaintext
+           Locate   +----+   Rebalance  +--------+
+    User ---------> | PD |+ <---------> | Server |+
+     ^              +----+|       +---> +--------+|
+     |               +----+       |      +--------+
+     |               3 nodes      |    many many nodes
+     +----------------------------+
+       PutObject, GetObject, etc.
+```
+
+但是用户没办法用官方的 S3 SDK 分别和我们的 PD 与 server 交互, 我们只能封装一个 S3 兼容的网关去做这件事情了,
+所以架构需要演变成这样:
+
+```plaintext
+            +---------+   Locate  +----+   Rebalance  +--------+
+S3 SDK <--> | Gateway |+ -------> | PD |+ <---------> | Server |+
+            +---------+| <        +----+|           > +--------+|
+             +---------+   \       +----+         /    +--------+
+           many many nodes  \      3 nodes       /   many many nodes
+                             \__________________/
+                           PutObject, GetObject, etc.
+```
+
+这个网关组件是无状态的, 可以随意横向扩缩容. 虽然引入这个新组件是很自然的事情,
+但是这个协议转换本身还是浪费了很多平台自己的机器资源的 (网络带宽), 可千万不要因为多买了几台机器就被裁了捏.
 
 ### 💸 成本, 成本, 成本: 我做冗余的钱谁来还给我啊... EC!
 
-TODO
+上文有提到过, 我们的存储成本占了整个容量的 66%, 也就是说, 我们买了 100 TiB 的磁盘, 结果有 66 TiB 的数据是完全用做冗余复制的,
+这太太太爆裂了, 烧钱烧爆喽. 所以我们要 TODO
