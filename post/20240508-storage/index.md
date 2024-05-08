@@ -32,17 +32,19 @@
 // Package nots3 即 not S3, 最原始的对象存储服务接口, 不太符合绝大部分用户需求.
 package nots3
 
-// PutObject 上传数据, 获取对象 ID.
-func PutObject(data []byte) (id ObjectID, err error)
-
 // ObjectID 对象 ID.
 type ObjectID string
 
-// GetObject 通过对象 ID 下载数据.
-func GetObject(id ObjectID) (data []byte, err error)
+type ObjectStorage interface {
+	// PutObject 上传数据, 获取对象 ID.
+	PutObject(data []byte) (id ObjectID, err error)
 
-// DeleteObject 删除对象.
-func DeleteObject(key ObjectID) error
+	// GetObject 通过对象 ID 下载数据.
+	GetObject(id ObjectID) (data []byte, err error)
+
+	// DeleteObject 删除对象.
+	DeleteObject(key ObjectID) error
+}
 
 ```
 
@@ -57,20 +59,22 @@ ID 的时候, 它可能没法和自己关心的文件的内容联系起来, 但�
 这个时候, 我们就要引入 *文件名* 的概念了, 这里一般的云厂商都叫做 **object key**.
 
 ```go
-// Package almosts3 即 almost S3, 接近 S3 的对象存储接口.
-package almosts3
+// Package s3almost 接近 S3 的对象存储接口.
+package s3almost
 
 // ObjectKey 用户自己关心的对象的名字.
 type ObjectKey string
 
-// PutObject 上传数据.
-func PutObject(key ObjectKey, data []byte) error
+type ObjectStorage interface {
+	// PutObject 上传数据.
+	PutObject(key ObjectKey, data []byte) error
 
-// GetObject 通过对象 key 下载数据.
-func GetObject(key ObjectKey) (data []byte, err error)
+	// GetObject 通过对象 key 下载数据.
+	GetObject(key ObjectKey) (data []byte, err error)
 
-// DeleteObject 删除对象.
-func DeleteObject(key ObjectKey) error
+	// DeleteObject 删除对象.
+	DeleteObject(key ObjectKey) error
+}
 
 ```
 
@@ -87,25 +91,27 @@ package s3
 // BucketName 桶名称.
 type BucketName string
 
-// CreateBucket 创建新的 bucket.
-func CreateBucket(bucket BucketName) error
-
-// DeleteBucket 删除 bucket.
-func DeleteBucket(bucket BucketName) error
-
-// ListBuckets 列出所有 bucket.
-func ListBuckets() ([]BucketName, error)
-
-// ListObjects 列出某个 bucket 下的所有对象名.
-func ListObjects(bucket BucketName) ([]ObjectKey, error)
-
-// 以下接口都是老接口加上新的 bucket 参数.
-
 type ObjectKey string
 
-func PutObject(bucket BucketName, key ObjectKey, data []byte) error
-func GetObject(bucket BucketName, key ObjectKey) (data []byte, err error)
-func DeleteObject(bucket BucketName, key ObjectKey) error
+type ObjectStorage interface {
+	// CreateBucket 创建新的 bucket.
+	CreateBucket(bucket BucketName) error
+
+	// DeleteBucket 删除 bucket.
+	DeleteBucket(bucket BucketName) error
+
+	// ListBuckets 列出所有 bucket.
+	ListBuckets() ([]BucketName, error)
+
+	// ListObjects 列出某个 bucket 下的所有对象名.
+	ListObjects(bucket BucketName) ([]ObjectKey, error)
+
+	// 以下接口都是老接口加上新的 bucket 参数.
+
+	PutObject(bucket BucketName, key ObjectKey, data []byte) error
+	GetObject(bucket BucketName, key ObjectKey) (data []byte, err error)
+	DeleteObject(bucket BucketName, key ObjectKey) error
+}
 
 ```
 
@@ -278,8 +284,213 @@ mygo.avi    my-favorites/
 * 提供给虚拟机平台作为存储使用, 使虚拟机磁盘理论可到 PiB 级别大小
 * 作为其他基础设施平台的存储底座, 如 RDS (高可用的数据库服务) 等等
 
-一般的业务用户很难遇到这些场景.
+一般的业务用户很难遇到这些场景, 但是实现的细节大同小异.
 
-## 如何实现对象存储?
+## 那么, 如何实现对象存储?
+
+好了, 终于开始这个话题了! 如何实现一个对象存储呢? 也就是实现上面的 `ObjectStorage` 接口.
+
+首先我们要从如何实现一个分布式系统开始说起.
+
+首先, 平台提供给用户的服务一般有两种形态:
+
+* 无状态 (stateless) 服务: 帮忙做请求的转发, 或者做简单的计算, 亦或是运行的时候会建立起一些缓存或内部状态,
+  但服务挂掉失去这些状态是可以容忍的, 这样的一类服务. 例如:
+    * 网关服务, 如 nginx
+    * 缓存服务, 如各类 CDN
+* 有状态 (stateful) 服务: 状态是持久化 (persistent) 的, 即服务挂掉以后重启, 状态会恢复成挂掉之前的状态, 这样的一类服务.
+  例如:
+    * 数据库, 如 MySQL
+    * 存储, 如 S3
+
+无状态服务的分布式太简单了, 直接横向扩容 (scale out) 部署多个实例, 用一个网关做做负载均衡 (nginx 加一条 upstream 或者
+backup), 就了事了, 这是最简单的分布式, 也没人会真的讨论这种分布式.
+
+有状态的分布式才是真正的挑战, 但是也没有想象中那么难, 遇到一个问题, 解决, 就完事儿了.
+
+### 📁 最简单的有状态服务: 存放到内存或文件
+
+不就是实现一下接口么, 简单, 当服务端接收到请求的时候, 分配一个 object ID (比如使用 UUID), 然后存到内存里面的一个 map
+里头 (e.g. `map[ObjectID][]byte`) 不就行了.
+
+但是放在内存里, 进程挂了就没了, 所以我们可以放到文件中去, 即:
+
+* Bucket name 对应一个机器上的一个文件夹
+* Object key 对应一个文件名
+
+简简单单就能实现一个能用的服务了.
+
+### 👀 单点故障: 这台机器/这个磁盘坏了怎么办? 复制!
+
+应对这个问题, 我们可以把请求数据复制 (replication) 一份, 发送给另外一个备用 (backup, follower) 服务, 当主服务挂掉了,
+我们可以利用 nginx 的 `backup` 参数 (directive) 自动的实现故障转移 (fail over).
+
+这个时候, 我们就会思考, 是由用户主动往 *主服务* (leader, main) 和 *备服务* 去双写 (dual write), 还是用户只需要和主服务交互,
+由主服务往备服务写数据呢 (代理写/proxy write)?
+
+```plaintext
+  Dual write       vs      Proxy write
+
+User -----> Main        User -----> Main
+  |                                  |
+  |                                  v
+  +-------> Backup                  Backup
+```
+
+考虑到用户的行为一般是不可信的, 如果用户 (或者我们提供的 SDK) 双写失败了, 这条数据就真没了, 所以一般会考虑代理写的方式.
+
+代理写又有三种方式, 也就是 MySQL 主从备份里面常提到的几个概念:
+
+* 异步 (asynchronous)
+* 半同步 (semi-synchronous)
+* 全同步 (fully synchronous)
+
+理解起来也很简单:
+
+* 异步
+
+当用户的请求数据在主服务上落盘了 (写到磁盘上了), 就返回用户成功, 然后再由异步任务把数据发往备服务.
+异步的方式缺点也很明显: 已经返回给用户成功了, 结果数据来不及异步发送给备服务就永久挂了, 那这块数据就确实没了,
+用户会认为你返回了成功, 结果数据没了, 这就妥妥是平台的问题.
+
+* 半同步
+
+当数据已经保证发往备服务了, 就给用户返回成功. 这个时候, 备服务可能还没将数据落盘, 但是这时已经保证在备服务的内存里头了,
+此时返回用户成功会比异步更安全, 但是时延会高一些. 真正会出现问题的时间区间在备服务收到数据但是没来得及落盘, 备服务挂了,
+那这些数据就完全丢失了, 这种场景是非常非常少见的, 比如主备不在同一个机房, 主机房被核爆完全找不到数据了, 备机房忽然断电,
+这个概率是非常非常小的.
+
+* 全同步
+
+等到备服务完全将数据也落盘, 才给用户返回成功, 这个比半同步明显更安全, 但是要求的时延也更高.
+
+### 📔 操作 (operation) 是一种特殊的数据: 如何实现删除操作的复制? 日志!
+
+当用户在主服务上面删除了一个对象, 我们要实现备服务上也要对应删除这个数据, 应该怎么实现呢? 这个时候, 我们就要引入
+*日志* (journal, 或者叫 WAL, 即 write-ahead log) 的概念. 我们把操作 (注意, 仅仅只封装写操作, 读不需要管) 封装成一条条的日志,
+发往备服务:
+
+```go
+package wal
+
+type (
+	BucketName string
+	ObjectKey  string
+)
+
+// Op 即操作名.
+type Op string
+
+const (
+	// OpPut 对象上传操作.
+	OpPut Op = "put"
+	// OpDel 对象删除操作.
+	OpDel Op = "delete"
+)
+
+// WAL 写操作日志.
+type WAL struct {
+	Op     Op
+	Bucket BucketName
+	Key    ObjectKey
+}
+
+var _ = []*WAL{
+	// 上传操作的日志例子.
+	{Op: OpPut, Bucket: "hello", Key: "world.txt"},
+	// 删除操作的日志例子.
+	{Op: OpDel, Bucket: "hello", Key: "world.txt"},
+}
+
+```
+
+WAL 还有一个好处, 就是它永远是 append only 不断追加写的一个数组, 数组上的操作顺序就是并发写确定下来以后的顺序, 所以 WAL
+还能做并发顺序的最终仲裁.
+
+假设我们选择半同步的方式, 并且支持 WAL, 那么一个用户的对象上传流程就变成了这样:
+
+```plaintext
+     5. Response OK
+  +------------------+
+  v                  |
+User ------------> Main 
+     1. PutObject   | ^
+                    | |
+ 2. Send WAL & data | | 4. Replication OK
+                    v |
+                   Backup
+                   |   ^
+                   |   | 3. Store WAL
+                    \_/  4. (Asynchronously) Store data
+```
+
+### 🚽 空间的节省: 日志不能无限长下去啊... 快照 (snapshot)!
+
+WAL 太多的话, 我们最好是用一种手段, 将 WAL 序号对应的那些全量数据打成一个快照, 这样一台全新的备节点加入到集群之后,
+它不用去从第 0 个 WAL 开始恢复数据, 而是可以从现有的快照和一个较新的序号为起点, 从快照追赶到最新的数据.
+
+接着, 快照之前的 WAL 我们就可以安全地删除 (retention) 掉了.
+
+### 🧠 角色与脑裂: 集群内角色的一致性是最难的挑战... Raft!
+
+刚刚我们提到, 我们可以用 nginx 的 `backup` directive 去做 backup 的切换, 当主服务挂了, nginx 自动将用户流量导入到备服务上去,
+但其实这有很大的问题:
+
+* 此时, 用户的写请求全部倒向备服务, 备服务的事实角色 (actual role) 变成了 "主服务", 但是它内部配置的角色仍旧是 "备服务",
+  产生了不一致
+* 这个时候, 如果主服务忽然上线, 回到集群, 那么在备服务里新写入的数据同步不到主服务, 就变成了脏数据😈
+
+这个主服务忽然上线的情况, 在事实上就产生了 "一个集群有两个主服务" 的情景, 这就是我们所说的 **脑裂** (split brain).
+脑裂只是一种问题的现象, 实际上整个大的问题, 是我们要实现一个真正能用的 **故障转移** (fail over) 机制.
+
+在双副本 (dual replica, 也就是主从两个角色) 的场景下, 低成本高效率地实现故障转移其实很简单, 这个原则就是:
+
+> 尽量人为干预, 少用自动化机制.
+
+具体方案:
+
+1. 使用一个叫 **周期/term** 的概念, 一个自增的数字, 去表示历史上角色切换的次数
+2. 当主服务挂掉时 (或者网络不可用了一段时间), 要 **永远将主服务踢出集群服务列表**, 这点其实 nginx 是做不到的 (没法实现自动将
+   upstream 踢出去), 这里需要自己开发一些额外手段
+3. 确定了主服务永远被踢出集群后, 人为设置备服务为新的主服务, 并且 term 加 1; 这里只是一个角色的设置, 实际上新的数据已经往备服务上读写了,
+   备服务是事实上的 "主服务" 了
+4. 部署新的服务进程, 当作全新的备服务加入到集群中, term 要和新的主服务一致
+5. 之后, 如果老的主服务意外加入集群, 因为 term 不同, 你很容易识别它并将它下线, 并且它已经不在网关的 upstream 列表里头了,
+   用户的流量不会进入
+
+好麻烦啊, 确实很麻烦, 这里需要一个系统性的算法才能 cover 住这么麻烦的流程, 不然的话, 如果你违反我说的原则,
+凭借自己的理解造出一堆自动的算法做角色切换和故障转移, 那么脑裂真的会是分分钟的事情...
+
+这个算法是什么呢...? **Raft**!!! Raft (或者其他的共识算法, 比如 Paxos) 本质上就是把这几个事情给做了:
+
+* WAL 的复制
+* 角色切换和故障转移
+
+没了, 然后我们调一调开源库就能用了, 具体算法的细节我们留作以后再回头细嚼.
+
+借用 Hashicorp 的 Raft 库, [创建一个 Raft 节点], 需要提供以下接口的实现:
+
+* log store: WAL 要存哪里, 一般可以存到本地文件, Hashicorp 有提供可用的实现
+* stable store: Raft 元数据 (比如 term) 要存哪里, 一般可以存到一个本地的 KV store, Hashicorp 有提供可用的实现
+* snapshot store: 快照要存哪里, 一般可以存到本地文件, Hashicorp 有提供可用的实现
+* transport: 集群的各个节点信息以及对应的网络通道, Hashicorp 有提供可用的实现
+* FSM (finite state machine/状态机): WAL 发送过来了以后, 要怎么把操作重现一遍的逻辑, 这里就是业务逻辑了
+
+所以我们发现, 只需要提供一个 FSM 的实现就好了, 救命啊, 好简单啊.
+
+关于这个库值得注意的是:
+
+* 这个库只提供了类似 `GetLeader` 这样的查询方法, 所以当故障转移发生的时候, 用户的请求怎么转移到正确的 leader
+  上, 这块的逻辑是要自己编写的
+* 加入新角色等等集群管理的方法, 库里面都是有提供的, 但是暴露成 HTTP API 或者 RPC, 这个也需要自己简单封装一下...
+
+引入了 Raft 以后, 有一些额外注意的点:
+
+* 一般我们是三节点部署的方式, 1 主 2 从, 这个时候成本就变成 66% 了, 成本极高
+* 只有一台主服务能接收写请求, 但其他从服务是可以考虑接收读请求的, 只要牺牲一定的一致性
+
+[创建一个 Raft 节点]: https://github.com/hashicorp/raft/blob/49bd61b66666fa76cb23fa81897e350f6e9b75de/api.go#L488
+
+### Scalability: 主服务就一台, 磁盘顶多几百 TiB 不够用啊... 分片 (partitioning)!
 
 TODO
