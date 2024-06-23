@@ -11,4 +11,3 @@
 
 * 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
 * 2023-03-13 [S3 as an Append-only Log Store](/post/20230313-log4s3)
-* 2024-05-08 [分布式存储, 你懂吗?](/post/20240508-storage)

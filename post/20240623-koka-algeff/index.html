@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1">
+
+    <title>Internal Blog Theory | Anqur</title>
+    <link rel="stylesheet" href="/style/post.css">
+    <link rel="stylesheet" href="/style/highlight.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
+          integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww"
+          crossorigin="anonymous">
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
+            integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd"
+            crossorigin="anonymous"></script>
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"
+            integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk"
+            crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+<header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+</header>
+
+<main>
+    <article>
+        <h1 id="koka-代数副作用入门">Koka 代数副作用入门</h1>
+<p>从 2014 年开始，有关于 Koka 的论文可以大致分为三类：</p>
+<ol type="1">
+<li>讲述代数副作用（algebraic effect）的类型系统，尤其是 Koka 的 <a
+href="https://www.microsoft.com/en-us/research/publication/koka-programming-with-row-polymorphic-effect-types-2/">第一篇论文</a></li>
+<li>函数式编程语言的内存管理，在 GC 和 RC 之间发明了 Perceus</li>
+<li>代数副作用 runtime，要足够小到能编译成高效的 C 语言，否则 runtime
+很重会增加负担</li>
+</ol>
+<p>想要入门代数副作用，实际上只需要关心它的类型系统即可，其他的知识只在“如何实现代数副作用”有用。</p>
+<h2 id="例子副作用声明">例子：副作用声明</h2>
+<p>我们使用类似 TypeScript 的语法来讲解代数副作用的例子，用 Agda
+的语法来解释相关代码的类型。</p>
+<p>假设我们有一个副作用叫做
+<code>Rand</code>，表示“random”，获取随机数据，我们用 interface
+来代替副作用的声明，这样有一点语法高亮能用：</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Rand {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rand</span>()<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>我们在任意表达式里面去用这个副作用：</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="co">/* Rand */</span> <span class="dt">number</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>这里的 <code>/* Rand */</code> 意思是函数 <code>main</code> 携带有
+<code>Rand</code> 副作用，因为我们没有用任何 effect handler 去处理。</p>
+<h2 id="例子副作用处理之-resume-一次one-shot">例子：副作用处理之 resume
+一次（one-shot）</h2>
+<p>假设我们真要在 <code>main</code> 内部处理这个副作用，我们复用
+try-catch 的语法，则长这样：</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb3"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>() {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">resume</span>(<span class="dv">42</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>这里需要注意一下 try-catch
+是一个表达式，而不是执行语句（statement）。</p>
+<p><code>main</code> 的执行结果就是：</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">//=&gt; 43</span></span></code></pre></div>
+<p>在这里我们的 effect handler 中的 <code>resume</code>
+只执行了一次，如果一门语言只支持恢复一次，那它就叫做 one-shot
+副作用系统。</p>
+<h3 id="相关表达式的类型">相关表达式的类型</h3>
+<p>在这里我们要探究许多表达式的类型，因为他们可能会反直觉，或第一次见会很诡异。</p>
+<p>我们知道 <code>rand</code> 这个 effect method 的类型是：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode agda"><code class="sourceCode agda"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rand <span class="ot">:</span> <span class="ot">()</span> <span class="ot">→</span> ⟨Rand⟩ number</span></code></pre></div>
+<p>即，它不接收任何参数，并返回 <code>number</code> 类型，副作用是
+<code>Rand</code>。</p>
+<p>但是这个副作用对应的 handler，即下面这个表达式的类型（设名字为
+<code>h0</code>），是不同的：</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb6"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>() {</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">//      ^~~~~~~~</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="fu">resume</span>(<span class="dv">42</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">// ~~~~~~~~~~~~~~~~~~~</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">// ~~~~~^</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>其类型为：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>h0 <span class="ot">:</span> <span class="ot">(</span>resume: <span class="ot">(</span>result: number<span class="ot">)</span> <span class="ot">→</span> number<span class="ot">)</span> <span class="ot">→</span> number</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">--                     ^~~~~^    ^~~~~^    ^~~~~^</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">--                       |         |         |</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">--                      /          |        / </span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- 入参是 number 类型，这是由         +--------</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">-- `rand()` 这个表达式的类型决定的。   |</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">--                                 |</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">--                                /</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- resume 的返回值类型，和整个 handler 的返回值类型，</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- 其实就是整个 try-block 的类型，保持一致。</span></span></code></pre></div>
+<p>可以发现，Koka 它其实掩盖了 <code>resume</code>
+这个参数，那么我们把它补全得更加地清晰：</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb8"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resume</span>(<span class="dv">42</span>)<span class="op">;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>甚至，如果你觉得 <code>resume</code> 不好听，JavaScript 的 Promise
+里的 <code>resolve</code> 更好理解，那么同样能改成：</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb9"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>(resolve<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resolve</span>(<span class="dv">42</span>)<span class="op">;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>所以 <code>resolve</code> 在这里的意思大概就是：</p>
+<blockquote>
+<p>我给 <code>rand()</code> 提供一个 <code>42</code>
+这个数值，让接下来的计算步骤用它跑一次。</p>
+</blockquote>
+<p>那如果跑多次，又会发生什么呢？</p>
+<h2 id="例子副作用处理之-resume-多次multi-shot">例子：副作用处理之
+resume 多次（multi-shot）</h2>
+<p>多次继续（multi-shot）的结果也有些难理解，例如以下代码：</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode ts"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">resume</span>(<span class="dv">42</span>)<span class="op">;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resume</span>(<span class="dv">69</span>)<span class="op">;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p><code>main</code> 的执行结果将会是：</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode js"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">//=&gt; 70</span></span></code></pre></div>
+<p>虽然第一次执行的结果是 <code>43</code>，第二次是
+<code>70</code>，但是只有第二次的结果被“观察”到了，这是因为第一次
+<code>resume(42)</code> 返回的值，我们明显把它给忽略掉了。</p>
+<h2 id="例子副作用处理之-resume-多次2">例子：副作用处理之 resume
+多次（2）</h2>
+<p>我们甚至可以把 <code>resume</code> 的结果再 <code>resume</code>
+一次，能够猜出来以下代码输出什么捏？</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode ts"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resume</span>(<span class="fu">resume</span>(<span class="dv">42</span>))<span class="op">;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>答案就是：</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode js"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">//=&gt; 44</span></span></code></pre></div>
+<p>意思大概就是，try-block 第一次执行的结果得到
+<code>43</code>，我们把它作为 <code>rand()</code> 的结果再去执行一次
+try-block，得到 <code>44</code>。</p>
+<h2 id="例子副作用处理之不-resume">例子：副作用处理之不 resume</h2>
+<p>假设我们不执行 <code>resume</code>，那么很简单理解，整个 try-block
+的返回值，可以由我们随意决定。</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode ts"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Rand) {</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">rand</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">42</span><span class="op">;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<p>输出：</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode js"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">//=&gt; 42</span></span></code></pre></div>
+<p>加法计算被我们给整体忽略掉了。</p>
+<h2 id="作业">作业</h2>
+<p>下面的超复杂的代码，能想到它会输出什么捏？</p>
+<!-- @formatter:off -->
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode ts"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Ask2 {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ask0</span>()<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ask1</span>()<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">ask0</span>() <span class="op">+</span> <span class="fu">ask1</span>()<span class="op">;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        a</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (Ask2) {</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ask0</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resume</span>(<span class="fu">resume</span>(<span class="dv">42</span>))<span class="op">;</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ask1</span>(resume<span class="op">:</span> (result<span class="op">:</span> <span class="dt">number</span>) <span class="kw">=&gt;</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="fu">resume</span>(<span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<!-- @formatter:on -->
+<h2 id="完整-koka-可运行代码">完整 Koka 可运行代码</h2>
+<p>直接使用 <code>brew install koka</code> 下载 Koka
+编译器，<code>koka main.kk</code> 编译代码，执行输出的程序即可：</p>
+<pre class="kk"><code>effect random
+  ctl rand(): int
+
+fun oneShot(): int
+  with handler
+    ctl rand() resume(42)
+  1 + rand()
+
+fun multiShot(): int
+  with handler
+    ctl rand()
+      resume(42)
+      resume(69)
+  1 + rand()
+
+fun nestedResume(): int
+  with handler
+    ctl rand() resume(resume(42))
+  1 + rand()
+
+fun noResume(): int
+  with handler
+    ctl rand() 42
+  1 + rand()
+
+effect ask2
+  ctl ask0(): int
+  ctl ask1(): int
+
+fun homework(): int
+  with handler
+    ctl ask0() resume(resume(42))
+    ctl ask1() resume(2)
+  1 + ask0() + ask1()
+
+fun main()
+  println(oneShot())
+  println(multiShot())
+  println(nestedResume())
+  println(noResume())
+  println(homework())</code></pre>
+
+    </article>
+</main>
+
+<footer>
+    <p>
+        Report bugs, or you have better ideas:
+        <a href="//github.com/anqur/anqur.github.io/issues">Issues</a>.
+    </p>
+    <p>All posts follow the <code>cc-by-4.0</code> license.</p>
+</footer>
+</body>
+
+</html>
