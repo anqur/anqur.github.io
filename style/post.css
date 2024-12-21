@@ -40,7 +40,7 @@ a {
 }
 
 table {
-  border-spacing: 0;
+  min-width: 100%;
 }
 tr:nth-child(even) {
   background-color: whitesmoke;

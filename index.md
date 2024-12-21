@@ -11,3 +11,7 @@
 
 * 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
 * 2023-03-13 [S3 as an Append-only Log Store](/post/20230313-log4s3)
+
+## 📑 个人总结及教程
+
+* 2024-06-23 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
