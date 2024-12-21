@@ -7,11 +7,15 @@
 [Anqur]: https://github.com/anqurvanillapy
 [工作简历]: post/cv
 
-## 💼 一些工作中的想法
+## 💼 工作中的想法
 
 * 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
 * 2023-03-13 [S3 as an Append-only Log Store](/post/20230313-log4s3)
 
-## 📑 个人总结及教程
+## 📓 总结和教程
 
 * 2024-06-23 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
+
+## 🎓 学术研究
+
+* 2024-12-21 [JIT 学习笔记](/post/20241221-general-jit-howto)

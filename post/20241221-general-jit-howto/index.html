@@ -32,28 +32,37 @@
 
 <main>
     <article>
-        <h1 id="hi-folks">Hi folks</h1>
-<p>这里是 <a href="https://github.com/anqurvanillapy">Anqur</a>,
-也可以叫我 <em>安可</em>/<em>俺去</em>/<em>aqq</em>. 我喜欢编程语言,
-日常与分布式系统打交道, 平常弹一些贝斯.</p>
-<p>我的 <a href="post/cv">工作简历</a>.</p>
-<h2 id="工作中的想法">💼 工作中的想法</h2>
+        <h1 id="jit-学习笔记">JIT 学习笔记</h1>
+<p>现代动态语言 VM 的架构，通常由以下几个组件组成：</p>
 <ul>
-<li>2023-03-10 <a href="/post/20230310-unitlet">将 Kubernetes API 翻译成
-systemd 操作</a></li>
-<li>2023-03-13 <a href="/post/20230313-log4s3">S3 as an Append-only Log
-Store</a></li>
+<li>Interpreter</li>
+<li>Baseline JIT compiler</li>
+<li>Optimizing JIT compiler</li>
 </ul>
-<h2 id="总结和教程">📓 总结和教程</h2>
+<p>以 JavaScript 引擎为例：</p>
+<figure>
+<img src="https://sillycross.github.io/images/2023-05-12/vm-archs.png"
+alt="VM Architectures" />
+<figcaption aria-hidden="true">VM Architectures</figcaption>
+</figure>
+<p><small> （图片来自：
+<a href="https://sillycross.github.io/2023/05/12/2023-05-12/">Haoran Xu
+- Building a baseline JIT for Lua automatically</a> ） </small></p>
+<p>然而，当我们搜索各种所谓“JIT 框架”时，得到的往往只是 JIT compiler 中
+code generator、optimizer 等组件，例如：</p>
 <ul>
-<li>2024-06-23 <a href="/post/20240623-koka-algeff">速通 Koka
-代数副作用</a></li>
+<li><a href="https://llvm.org">LLVM</a></li>
+<li><a href="https://gcc.gnu.org/wiki/JIT">libgccjit</a></li>
+<li><a href="https://asmjit.com/">asmjit</a></li>
+<li><a href="https://luajit.org/dynasm.html">DynASM</a></li>
+<li><a href="https://cranelift.dev/">Cranelift</a></li>
+<li><a href="https://github.com/vnmakarov/mir">MIR</a></li>
+<li><a href="https://www.gnu.org/software/lightning/">GNU
+lighting</a></li>
+<li><a href="https://www.gnu.org/software/libjit/">GNU LibJIT</a></li>
+<li>……，太多太多了</li>
 </ul>
-<h2 id="学术研究">🎓 学术研究</h2>
-<ul>
-<li>2024-12-21 <a href="/post/20241221-general-jit-howto">JIT
-学习笔记</a></li>
-</ul>
+<p>TODO</p>
 
     </article>
 </main>
