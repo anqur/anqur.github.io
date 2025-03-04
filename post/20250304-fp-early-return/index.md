@@ -91,7 +91,16 @@ fun {m} [Monad m] =>
 Notice that there is no actual mutable locals at all. And it's stunning an `#eval foo` could also run without giving an
 actual monad instance.
 
+You may find that the generated code is exactly the same to that with Rust's [`std::ops::Controlflow`] approach:
+
+* At the final exit, is our loop short-circuited? Nope, the loop exits normally, we could return normally too (the
+  `false` case)
+* Oh yes, the loop exits early, take the (*residual*, in Rust's flavor) value out, and we return it abnormally (the
+  `true` case)
+
 ["`do` unchained"]: https://lean-lang.org/papers/do.pdf
+
+[`std::ops::Controlflow`]: https://doc.rust-lang.org/beta/std/ops/enum.ControlFlow.html
 
 ## Koka
 

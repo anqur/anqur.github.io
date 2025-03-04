@@ -115,6 +115,18 @@ fun {m} [Monad m] =&gt;
 <p>Notice that there is no actual mutable locals at all. And it's
 stunning an <code>#eval foo</code> could also run without giving an
 actual monad instance.</p>
+<p>You may find that the generated code is exactly the same to that with
+Rust's <a
+href="https://doc.rust-lang.org/beta/std/ops/enum.ControlFlow.html"><code>std::ops::Controlflow</code></a>
+approach:</p>
+<ul>
+<li>At the final exit, is our loop short-circuited? Nope, the loop exits
+normally, we could return normally too (the <code>false</code>
+case)</li>
+<li>Oh yes, the loop exits early, take the (<em>residual</em>, in Rust's
+flavor) value out, and we return it abnormally (the <code>true</code>
+case)</li>
+</ul>
 <h2 id="koka">Koka</h2>
 <p>It's much crazier in Koka, since there's algebraic effects and
 handlers, it's totally unnecessary to have <code>do</code>-notation, and
