@@ -1,21 +1,21 @@
 # Hi folks
 
-这里是 [Anqur], 也可以叫我 *安可*/*俺去*/*aqq*. 我喜欢编程语言, 日常与分布式系统打交道, 平常弹一些贝斯.
+* I'm [Anqur], you could call me *安可*, *俺去*, *aqq* too.
+* I make programming languages.
+* I used to work on distributed systems, embedded systems, and web.
+* I love music. I play the electric guitar and the electric bass guitar in many bands.
 
-我的 [工作简历].
+My [CV (Chinese)].
 
 [Anqur]: https://github.com/anqurvanillapy
-[工作简历]: post/cv
 
-## 💼 工作中的想法
+[CV (Chinese)]: post/cv
 
-* 2023-03-10 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
-* 2023-03-13 [S3 as an Append-only Log Store](/post/20230313-log4s3)
+## Posts
 
-## 📓 总结和教程
+I write about 💡Ideas, 🏃Cheatsheet, and 🗑️Notes.
 
-* 2024-06-23 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
-
-## 🎓 学术研究
-
-* 2024-12-21 [JIT 学习笔记](/post/20241221-general-jit-howto)
+* 2025-03-04 🗑️ [Control flow in functional programming](/post/20250304-fp-control-flow)
+* 2024-06-23 🏃 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
+* 2023-03-13 💡 [S3 as an Append-only Log Store](/post/20230313-log4s3)
+* 2023-03-10 💡 [将 Kubernetes API 翻译成 systemd 操作](/post/20230310-unitlet)
