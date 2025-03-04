@@ -138,6 +138,18 @@ parentheses.</p>
 continuation library is not needed at all. Every computation is
 naturally wired during the compilation using type-directed CPS and
 monadic translation (okay, monad again).</p>
+<h2 id="new-ideas-nope.">New Ideas? Nope.</h2>
+<p>Initially I was thinking about writing a small C subset called
+<code>MonadC</code>, to demonstrate that one could have normal
+imperative programming but everything would be translated into "ambient
+monads", which means, we could have monads built-in in our syntax (e.g.
+the abstract syntax or even lower), and typechecking and code generation
+to LLVM IR would be fairly easy. And there's also a chance to see if
+LLVM could be able to aggressively optimize it to reach one written in
+standard C.</p>
+<p>But I kinda think a pass of monadic translation is entirely
+unnecessary now. And it should take many days on it. Forget about
+it.</p>
 
     </article>
 </main>
