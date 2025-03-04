@@ -13,7 +13,7 @@ My [CV (Chinese)].
 
 ## Posts
 
-I write about 💡Ideas, 🏃Cheatsheet, and 🚮Notes.
+I write about 💡Ideas, 🏃Cheatsheets, and 🚮Notes.
 
 * 2025-03-04 🚮 [Early Return in Functional Programming](/post/20250304-fp-early-return)
 * 2024-06-23 🏃 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
