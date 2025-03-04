@@ -31,7 +31,7 @@ img { max-width: 100%; }
 /* Custom style */
 
 html, body {
-  font-family: Tahoma, Verdana, sans-serif;
+  font-family: "Trebuchet MS", Arial, sans-serif;
 }
 
 a {
@@ -60,7 +60,3 @@ header a {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: xx-large;
   }
-
-footer {
-  font-style: italic;
-}
