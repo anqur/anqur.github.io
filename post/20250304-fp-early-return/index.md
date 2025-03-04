@@ -119,7 +119,7 @@ Early return in Koka is like throwing exceptions, but a delimited continuation l
 computation is naturally wired during the compilation using type-directed CPS and monadic translation (okay, monad
 again).
 
-## New Ideas? Nope.
+## New ideas? Nope.
 
 Initially I was thinking about writing a small C subset called `MonadC`, to demonstrate that one could have normal
 imperative programming but everything would be translated into "ambient monads", which means, we could have monads
@@ -129,3 +129,6 @@ in standard C.
 
 But I kinda think a pass of monadic translation is entirely unnecessary now. And it should take many days on it. Forget
 about it.
+
+One just needs to design a language where the control flow could be trivial for the translation into monads, for
+reasoning purposes.
