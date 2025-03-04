@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1">
+
+    <title>Internal Blog Theory | Anqur</title>
+    <link rel="stylesheet" href="/style/post.css">
+    <link rel="stylesheet" href="/style/highlight.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css"
+          integrity="sha384-veTAhWILPOotXm+kbR5uY7dRamYLJf58I7P+hJhjeuc7hsMAkJHTsPahAl0hBST0" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.js"
+            integrity="sha384-v6mkHYHfY/4BWq54f7lQAdtIsoZZIByznQ3ZqN38OL4KCsrxo31SLlPiak7cj/Mg"
+            crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/contrib/auto-render.min.js"
+            integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+<header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+</header>
+
+<main>
+    <article>
+        <h1 id="early-return-in-functional-programming">Early Return in
+Functional Programming</h1>
+<h2 id="haskell-is-weak">Haskell is weak</h2>
+<p>Control flow is usually achieved using the notorious <em>monads</em>
+in functional programming. I don't hate monads, I don't like them
+either. But I strongly hate the built-in monads in Haskell, for the
+following reasons:</p>
+<ol type="1">
+<li>Haskell's <code>do</code> notation is weak</li>
+<li>Haskell's <em>"purity"</em> implies effects of <code>div</code>
+(divergence) and <code>exn</code> (exception), and the latter is based
+on a full-blown continuation library for tracing and debugging</li>
+<li>Haskell's higher-ranked type is weak</li>
+</ol>
+<p>If one has to do an <em>early return</em>, there are just a few
+options, like <code>throw</code>-ing exceptions (why bother?). And other
+rescues would be like bringing in the <em>monad transformer</em> library
+<code>mtl</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode hs"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> (when)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad.Except</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad.IO.Class</span> (liftIO)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">AppError</span> <span class="ot">=</span> <span class="dt">EarlyReturn</span> <span class="kw">deriving</span> (<span class="dt">Show</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">App</span> <span class="ot">=</span> <span class="dt">ExceptT</span> <span class="dt">AppError</span> <span class="dt">IO</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">app ::</span> <span class="dt">App</span> <span class="dt">Int</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>app <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    a <span class="ot">&lt;-</span> liftIO <span class="op">$</span> <span class="fu">return</span> <span class="dv">42</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    when (a <span class="op">&gt;</span> <span class="dv">0</span>) <span class="op">$</span> throwError <span class="dt">EarlyReturn</span> <span class="co">-- here&#39;s the early return</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    b <span class="ot">&lt;-</span> liftIO <span class="op">$</span> <span class="fu">return</span> <span class="dv">10</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="op">$</span> a <span class="op">+</span> b</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> runExceptT app</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> result <span class="kw">of</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Left</span> <span class="dt">EarlyReturn</span> <span class="ot">-&gt;</span> <span class="fu">putStrLn</span> <span class="st">&quot;Early return&quot;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Right</span> val <span class="ot">-&gt;</span> <span class="fu">print</span> val</span></code></pre></div>
+<p>Monad transformer is so trivial in a dependently-typed programming
+language, or, in such a language, one will not notice there would be
+such concept at all. Would someone realize it's a monad transformer when
+seeing <a
+href="https://leanprover-community.github.io/mathlib4_docs/Init/Core.html#ForIn"><code>ForIn</code></a>
+in Lean 4?</p>
+<p>It's just not the case in Haskell.</p>
+<h2 id="lean-4">Lean 4</h2>
+<p>There is "local imperativity" in Lean 4, which is elaborated in their
+<a href="https://lean-lang.org/papers/do.pdf">"<code>do</code>
+unchained"</a> paper. Look at this example:</p>
+<pre class="lean"><code>def foo [Monad m]: m Bool := do
+  let mut a := 1
+  for i in List.range 10 do
+    if i = 3 then return true
+    a := a + 1
+  return false</code></pre>
+<p>Use the <code>#print foo</code> command to print the desugared
+definition. My version of Lean seems to have some issues upon
+pretty-printing desugared stuff, but the output is rectified like the
+following, with using correct syntax and adding some necessary type
+annotations:</p>
+<pre class="lean"><code>def foo.{u_1} : {m : Type → Type u_1} → [inst : Monad m] → m Bool :=
+fun {m} [Monad m] =&gt;
+  let a := 1;
+  let col := List.range 10;
+  do
+  let r: Option Bool × Nat ←
+      forIn col ⟨none, a⟩ fun i r =&gt;
+        let r := r.snd;
+        let a := r;
+        let __do_jp := fun a y =&gt;
+          let a := a + 1;
+          do
+          pure PUnit.unit
+          pure (ForInStep.yield ⟨none, a⟩);
+        if i = 3 then pure (ForInStep.done ⟨some true, a⟩)
+        else do
+          let y ← pure PUnit.unit
+          __do_jp a y
+  let a : Nat := r.snd
+  let __do_jp : PUnit → m Bool := fun y =&gt; pure false
+  match r.fst with
+    | none =&gt; do
+      let y ← pure PUnit.unit
+      __do_jp y
+    | some a =&gt; pure a</code></pre>
+<p>Notice that there is no actual mutable locals at all. And it's
+stunning an <code>#eval foo</code> could also run without giving an
+actual monad instance.</p>
+<h2 id="koka">Koka</h2>
+<p>It's much crazier in Koka, since there's algebraic effects and
+handlers, it's totally unnecessary to have <code>do</code>-notation, and
+even all the control flow utilities in Koka are based on the
+<em>trailing closures</em> syntactic sugar:</p>
+<pre class="kk"><code>effect exn_return&lt;a&gt;
+  ctl exn_return(): a
+
+fun main()
+  with handler
+    ctl exn_return() ()
+  for(10) fn(i)
+    if i == 3 then
+      println(&quot;hi&quot;)
+      exn_return()
+    println(i)</code></pre>
+<p>Note that the <code>for</code> function receives a closure as its
+final argument, and one could use an indented block to ease the pain of
+parentheses.</p>
+<p>Early return in Koka is like throwing exceptions, but a delimited
+continuation library is not needed at all. Every computation is
+naturally wired during the compilation using type-directed CPS and
+monadic translation (okay, monad again).</p>
+
+    </article>
+</main>
+
+<footer>
+    <p>
+        All posts follow the <code>cc-by-4.0</code> license. See <a href="//github.com/anqur/anqur.github.io/issues">issues</a>?
+    </p>
+</footer>
+</body>
+
+</html>
