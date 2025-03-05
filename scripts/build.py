@@ -36,7 +36,7 @@ def generator(pending_items, done, total, tmpl):
         with open(infile) as f:
             body = (
                 sp.run(
-                    ["pandoc", "--mathjax", "-f", "markdown-smart"],
+                    ["pandoc", "--mathjax", "-f", "gfm"],
                     stdin=f,
                     capture_output=True,
                 )

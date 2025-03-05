@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1">
+
+    <title>Internal Blog Theory | Anqur</title>
+    <link rel="stylesheet" href="/style/post.css">
+    <link rel="stylesheet" href="/style/highlight.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css"
+          integrity="sha384-veTAhWILPOotXm+kbR5uY7dRamYLJf58I7P+hJhjeuc7hsMAkJHTsPahAl0hBST0" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.js"
+            integrity="sha384-v6mkHYHfY/4BWq54f7lQAdtIsoZZIByznQ3ZqN38OL4KCsrxo31SLlPiak7cj/Mg"
+            crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/contrib/auto-render.min.js"
+            integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+<header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+</header>
+
+<main>
+    <article>
+        <h1 id="c-as-an-ir">C as an IR</h1>
+<p>You ever think about C could be a good IR? It's cool to generate C
+code from a higher-level language? C could be a feasible backend?</p>
+<p>Yes! But...</p>
+<h2 id="strict-aliasing">Strict aliasing</h2>
+<p>This tiny little rule could shatter your illusions, and it's called
+"strict aliasing". Briefly speaking, every raw pointer <code>T*</code>
+you see in C is actually <code>std::unique_ptr&lt;T&gt;</code> in C++,
+or <code>Box&lt;T&gt;</code> in Rust. It's not about the move semantics
+at all, it's about a scary assumption:</p>
+<blockquote>
+<p>Every raw pointer <code>T*</code> uniquely points to some memory
+location, and it can't be shared by other pointers.</p>
+</blockquote>
+<p>So according to C standard, copying a <code>T*</code> pointer then
+casting it to <code>unsigned char*</code> for reads/writes with simple
+pointer arithmetic, unfortunately, is an <em>undefined
+behavior</em>.</p>
+<p>You might wonder you haven't seen any fire by doing this throughout
+your 3-decade C/C++ career, that's because those major C compilers know
+people would do this on a day-to-day basis, so they simply turn off the
+strict aliasing for types like <code>char</code> and
+<code>unsigned char</code>.</p>
+<p>If you can't imagine how scary it is, see this example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Export this function to avoid inlining and warnings.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> foo<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>f<span class="op">,</span> <span class="dt">int</span> <span class="op">*</span>i<span class="op">);</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> foo<span class="op">(</span><span class="dt">float</span> <span class="op">*</span>f<span class="op">,</span> <span class="dt">int</span> <span class="op">*</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>i <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>f <span class="op">=</span> <span class="fl">0.</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">*</span>i<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> x <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%d\n</span><span class="st">&quot;</span><span class="op">,</span> x<span class="op">);</span> <span class="co">// should print 0</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> foo<span class="op">((</span><span class="dt">float</span> <span class="op">*)(&amp;</span>x<span class="op">),</span> <span class="op">&amp;</span>x<span class="op">);</span> <span class="co">// &quot;aliasing&quot; happens here</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%d\n</span><span class="st">&quot;</span><span class="op">,</span> x<span class="op">);</span> <span class="co">// should print 0 too</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Turn on optimization and some warnings:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># GCC</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">-O2</span> <span class="at">-std</span><span class="op">=</span>c23 <span class="at">-Wall</span> <span class="at">-Wextra</span> <span class="at">-Wpedantic</span> <span class="at">-Werror</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Clang</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">-O2</span> <span class="at">-std</span><span class="op">=</span>c23 <span class="at">-Weverything</span> <span class="at">-Wno-pre-c23-compat</span> <span class="at">-Werror</span></span></code></pre></div>
+<p>Notice that <code> -fstrict-aliasing</code> is enabled by default.
+And then, the output:</p>
+<pre class="plaintext"><code>0
+1</code></pre>
+<p>Yup, the optimizer thinks <code>i</code> would not point to the
+location of <code>*f</code>, so the return statement
+<code>return *i</code> is optimized to simply <code>return 1</code>.</p>
+<h2 id="it-should-be-opt-in">"It should be opt-in!"</h2>
+<p>People would love C again if non-strict aliasing is ambient, and they
+could <em>opt in</em> strict aliasing when necessary.</p>
+<p>Furthermore, if one really uses C as an IR, it might not be
+acceptable to tune the compiler flags for the users, they should prefer
+messing around the flags for the generated C code themselves. So? Forget
+about <code>-fno-strict-aliasing</code>, one probably can't do this
+during code generation.</p>
+<p>The rescue is <code>[[gnu::may_alias]]</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="ex">gnu::may_alias</span><span class="op">]]</span> <span class="kw">typedef</span> <span class="dt">float</span> may_alias_float_t<span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="ex">gnu::may_alias</span><span class="op">]]</span> <span class="kw">typedef</span> <span class="dt">int</span> may_alias_int_t<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> foo<span class="op">(</span>may_alias_float_t <span class="op">*</span>f<span class="op">,</span> may_alias_int_t <span class="op">*</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>i <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>f <span class="op">=</span> <span class="fl">0.</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">*</span>i<span class="op">;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>I tested this on latest GCC/Clang. Worked like a charm. Use the
+original type to bring back strict aliasing again, or use
+<code>restrict</code> to be more aggressive:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="ex">gnu::may_alias</span><span class="op">]]</span> <span class="kw">typedef</span> <span class="dt">float</span> may_alias_float_t<span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="ex">gnu::may_alias</span><span class="op">]]</span> <span class="kw">typedef</span> <span class="dt">int</span> may_alias_int_t<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> foo<span class="op">(</span>may_alias_float_t <span class="op">*</span><span class="dt">restrict</span> f<span class="op">,</span> may_alias_int_t <span class="op">*</span><span class="dt">restrict</span> i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>i <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>f <span class="op">=</span> <span class="fl">0.</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">*</span>i<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This worked on latest GCC/Clang too.</p>
+<p>See <a
+href="https://clang.llvm.org/docs/UsersManual.html#strict-aliasing">Clang
+User Manual</a> for further information on this topic.</p>
+<h2 id="debugging">Debugging</h2>
+<p>Last but not least, generated C code could only guarantee line-level
+"debugging" ability using <code>#line</code>. And I don't think it's a
+thing since one is not able to use a debugger at all: Debugging
+experience is suddenly none.</p>
+<p>The first idea came to my mind was to provide a tool to modify an
+existing program's debugging symbols, it won't be that hard with <a
+href="https://github.com/gimli-rs/gimli">a DWARF parser</a>, but it
+doesn't sound quite trivial. Let's wait for some further
+exploration.</p>
+
+    </article>
+</main>
+
+<footer>
+    <p>
+        All posts follow the <code>cc-by-4.0</code> license. See <a href="//github.com/anqur/anqur.github.io/issues">issues</a>?
+    </p>
+</footer>
+</body>
+
+</html>

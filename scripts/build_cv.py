@@ -15,7 +15,7 @@ def main():
     with open(_CV_PATH) as f:
         body = (
             sp.run(
-                ["pandoc", "--mathjax", "-f", "markdown-smart"],
+                ["pandoc", "--mathjax", "-f", "gfm"],
                 stdin=f,
                 capture_output=True,
             )

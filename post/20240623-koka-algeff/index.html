@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -58,6 +58,7 @@ href="https://www.microsoft.com/en-us/research/publication/koka-programming-with
 <p>假设我们真要在 <code>main</code> 内部处理这个副作用，我们复用
 try-catch 的语法，则长这样：</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb3"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
@@ -69,6 +70,7 @@ try-catch 的语法，则长这样：</p>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>这里需要注意一下 try-catch
 是一个表达式，而不是执行语句（statement）。</p>
 <p><code>main</code> 的执行结果就是：</p>
@@ -87,6 +89,7 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb5-1"><a href="
 <p>但是这个副作用对应的 handler，即下面这个表达式的类型（设名字为
 <code>h0</code>），是不同的：</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb6"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
@@ -101,6 +104,7 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb5-1"><a href="
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>其类型为：</p>
 <div class="sourceCode" id="cb7"><pre
 class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>h0 <span class="ot">:</span> <span class="ot">(</span>resume: <span class="ot">(</span>result: number<span class="ot">)</span> <span class="ot">→</span> number<span class="ot">)</span> <span class="ot">→</span> number</span>
@@ -116,6 +120,7 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="
 <p>可以发现，Koka 它其实掩盖了 <code>resume</code>
 这个参数，那么我们把它补全得更加地清晰：</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb8"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
@@ -127,9 +132,11 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>甚至，如果你觉得 <code>resume</code> 不好听，JavaScript 的 Promise
 里的 <code>resolve</code> 更好理解，那么同样能改成：</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb9"><pre class="sourceCode ts"><code class="sourceCode typescript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> a <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> <span class="fu">rand</span>()<span class="op">;</span></span>
@@ -141,6 +148,7 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>所以 <code>resolve</code> 在这里的意思大概就是：</p>
 <blockquote>
 <p>我给 <code>rand()</code> 提供一个 <code>42</code>
@@ -151,6 +159,7 @@ class="sourceCode agda"><code class="sourceCode agda"><span id="cb7-1"><a href="
 resume 多次（multi-shot）</h2>
 <p>多次继续（multi-shot）的结果也有些难理解，例如以下代码：</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb10"><pre
 class="sourceCode ts"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
@@ -164,6 +173,7 @@ class="sourceCode ts"><code class="sourceCode typescript"><span id="cb10-1"><a h
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p><code>main</code> 的执行结果将会是：</p>
 <div class="sourceCode" id="cb11"><pre
 class="sourceCode js"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
@@ -176,6 +186,7 @@ class="sourceCode js"><code class="sourceCode javascript"><span id="cb11-1"><a h
 <p>我们甚至可以把 <code>resume</code> 的结果再 <code>resume</code>
 一次，能够猜出来以下代码输出什么捏？</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb12"><pre
 class="sourceCode ts"><code class="sourceCode typescript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
@@ -188,6 +199,7 @@ class="sourceCode ts"><code class="sourceCode typescript"><span id="cb12-1"><a h
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>答案就是：</p>
 <div class="sourceCode" id="cb13"><pre
 class="sourceCode js"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
@@ -199,6 +211,7 @@ try-block，得到 <code>44</code>。</p>
 <p>假设我们不执行 <code>resume</code>，那么很简单理解，整个 try-block
 的返回值，可以由我们随意决定。</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb14"><pre
 class="sourceCode ts"><code class="sourceCode typescript"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">main</span>()<span class="op">:</span> <span class="dt">number</span> {</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="cf">try</span> {</span>
@@ -211,6 +224,7 @@ class="sourceCode ts"><code class="sourceCode typescript"><span id="cb14-1"><a h
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <p>输出：</p>
 <div class="sourceCode" id="cb15"><pre
 class="sourceCode js"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span>
@@ -219,6 +233,7 @@ class="sourceCode js"><code class="sourceCode javascript"><span id="cb15-1"><a h
 <h2 id="作业">作业</h2>
 <p>下面的超复杂的代码，能想到它会输出什么捏？</p>
 <!-- @formatter:off -->
+
 <div class="sourceCode" id="cb16"><pre
 class="sourceCode ts"><code class="sourceCode typescript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Ask2 {</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ask0</span>()<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
@@ -240,6 +255,7 @@ class="sourceCode ts"><code class="sourceCode typescript"><span id="cb16-1"><a h
 <span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    }<span class="op">;</span></span>
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <!-- @formatter:on -->
+
 <h2 id="完整-koka-可运行代码">完整 Koka 可运行代码</h2>
 <p>直接使用 <code>brew install koka</code> 下载 Koka
 编译器，<code>koka main.kk</code> 编译代码，执行输出的程序即可：</p>

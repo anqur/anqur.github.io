@@ -15,6 +15,7 @@ My [CV (Chinese)].
 
 I write about 💡Ideas, 🏃Cheatsheets, and 🚮Notes.
 
+* 2025-03-05 🚮 [C as an IR](/post/20250305-c-as-an-ir)
 * 2025-03-04 🚮 [Early Return in Functional Programming](/post/20250304-fp-early-return)
 * 2024-06-23 🏃 [速通 Koka 代数副作用](/post/20240623-koka-algeff)
 * 2023-03-13 💡 [S3 as an Append-only Log Store](/post/20230313-log4s3)
