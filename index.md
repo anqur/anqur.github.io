@@ -15,6 +15,7 @@ My [CV (Chinese)].
 
 I write about 💡Ideas, 🏃Cheatsheets, and 🚮Notes.
 
+* 2025-03-15 💡 [Monad is trash](/post/20250315-monad-is-trash)
 * 2025-03-05 🚮 [C as an IR](/post/20250305-c-as-an-ir)
 * 2025-03-04 🚮 [Early Return in Functional Programming](/post/20250304-fp-early-return)
 * 2024-06-23 🏃 [速通 Koka 代数副作用](/post/20240623-koka-algeff)

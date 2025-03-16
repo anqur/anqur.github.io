@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1">
+
+    <title>Internal Blog Theory | Anqur</title>
+    <link rel="stylesheet" href="/style/post.css">
+    <link rel="stylesheet" href="/style/highlight.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css"
+          integrity="sha384-veTAhWILPOotXm+kbR5uY7dRamYLJf58I7P+hJhjeuc7hsMAkJHTsPahAl0hBST0" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.js"
+            integrity="sha384-v6mkHYHfY/4BWq54f7lQAdtIsoZZIByznQ3ZqN38OL4KCsrxo31SLlPiak7cj/Mg"
+            crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/contrib/auto-render.min.js"
+            integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+<header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+</header>
+
+<main>
+    <article>
+        <h1 id="monad-is-trash">Monad is trash</h1>
+<p>This post is about some of my new ideas on programming language
+design, although the title sounds quite off.</p>
+<p>But, monad is just trash.</p>
+<h2 id="monad-in-haskell-is-trash">Monad in Haskell is trash</h2>
+<p>Monad is used mostly for these purposes:</p>
+<ul>
+<li>Imperative paradigm with limited support of control flow.</li>
+<li>Side effect tracking, e.g. <code>IO a</code> which tracks I/O
+operations.</li>
+</ul>
+<p>And the drawbacks are bizarre:</p>
+<ul>
+<li>When it comes to control flow, for example, one has to achieve <a
+href="../20250304-fp-early-return">early return</a> via throwing
+exceptions and setting up handlers.</li>
+<li>The <code>IO a</code> effect is the "worst" effect, as mentioned in
+the <a
+href="https://koka-lang.github.io/koka/doc/book.html#sec-effect-types">Koka
+book</a>, for covering up all the important sub-effects that users might
+need for fine-grained control:
+<ul>
+<li>Exceptions</li>
+<li>Divergence (a function might not terminate)</li>
+<li>Non-determinism (e.g. generating random numbers)</li>
+<li>Console</li>
+<li>Networking</li>
+<li>Filesystem</li>
+<li>UI (graphics system)</li>
+<li>Heap allocation/read/write</li>
+</ul></li>
+</ul>
+<p>Why would Haskell put these altogether? Because making effects
+extensible is not trivial at all. <code>IO a</code> is just a plain data
+type, imagine one prints some text to the console and writes some bytes
+to a file, what return type would be suitable for the program entrypoint
+<code>main</code>?</p>
+<p>Instead of calling it <code>IO a</code>, there are essentially two
+worlds in Haskell: the <em>impure</em> (effect-ful) and the
+<em>pure</em> (effect-free). And as we know, getting back to the pure is
+<em>unsafe</em> (<code>unsafePerformIO</code>).</p>
+<p>One still has the choice to use third-party libraries for extensible
+effects. Just see how many there are:</p>
+<ul>
+<li><a
+href="https://hackage.haskell.org/package/fused-effects"><code>fused-effects</code></a></li>
+<li><a
+href="https://hackage.haskell.org/package/freer-simple"><code>freer-simple</code></a></li>
+<li><a
+href="https://hackage.haskell.org/package/effectful"><code>effectful</code></a></li>
+<li><a
+href="https://hackage.haskell.org/package/extensible-effects"><code>extensible-effects</code></a></li>
+<li><a
+href="https://hackage.haskell.org/package/polysemy"><code>polysemy</code></a></li>
+</ul>
+<p>I'm not intrigued to know about their differences. See those language
+extensions, they might look terrifying for you, but I'm not scared. This
+is how it would look without good <em>compile-time evaluation</em> and
+<em>static reflection</em> support (if these two features remind you of
+C++, you got the joke). Check out Lean 4 and Scala 3, see how they
+trivialize the problems.</p>
+<p>Koka trivializes extensible effects with <a
+href="https://arxiv.org/pdf/1406.2061">scoped labels</a> (i.e. effects
+could be duplicate). Note that it's nothing related to the fancy
+"algebraic effect" feature, it's only about (type system for) "effect
+types". So unsurprisingly, it's not new: Koka nailed it in 2014, more
+than a decade ago.</p>
+<p>If you're still not convinced, let me show you these banger lines
+from <a href="https://dl.acm.org/doi/10.1145/3486610.3486893">Safer
+exceptions in Scala</a>:</p>
+<blockquote>
+<p>Dealing with one monad at a time is straightforward but dealing with
+several monads together is much less pleasant since monads do not
+compose well. A great number of techniques have been proposed,
+implemented, and promoted to deal with this, from monad transformers, to
+free monads, to tagless final. None of these techniques is universally
+liked, however; each introduces a complicated DSL with runtime overhead
+that is both hard to understand for non-experts and hard to debug. In
+the end, many developers prefer to work instead in a single
+“super-monad” like ZIO that has error propagation built-in alongside
+other aspects. This one-size-fits-all approach can work nicely for
+frameworks that offer a fixed set of capabilities, but its fixed
+overhead and lack of flexibility make it unsuitable as the only provided
+solution for a general purpose programming language.</p>
+</blockquote>
+<p>Okay, now, get ready for time to cook Koka...</p>
+<h2 id="effect-is-far-from-enough">Effect is far from enough</h2>
+<p>There are still further issues despite an effect is "monadic" or
+"algebraic", the most important one is called
+<strong>coeffect</strong>.</p>
+<p>It sounds like some annoying category theorists speaking in tongues.
+But for most of the time it's just about a simple concept,
+<em>"resource"</em>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span>p <span class="op">=</span> malloc<span class="op">(</span><span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">));</span></span></code></pre></div>
+<p>In the above example, one typically <em>expects</em>:</p>
+<ul>
+<li>Only <code>p</code> points to the resource (<em>memory</em>),</li>
+<li>To close (reclaim) the resource wisely, or,</li>
+<li>To transfer the resource, and the transferee should take further
+care of it.</li>
+</ul>
+<p>Here, the <code>p</code> is a coeffect, a handle, a descriptor, a
+resource, and any similar names you would drop.</p>
+<p>Usually, people use the <em>state monad</em> <code>ST s a</code> to
+simulate this situation:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode hs"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad.ST</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.STRef</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ot">app ::</span> <span class="dt">ST</span> s <span class="dt">Int</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>app <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  ref <span class="ot">&lt;-</span> newSTRef <span class="dv">0</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  modifySTRef ref (<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  readSTRef ref</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="fu">print</span> <span class="op">$</span> runST app</span></code></pre></div>
+<p>If you're confused with the type parameter <code>s</code>, the type
+of variable <code>ref</code> is <code>STRef s Int</code>. If one
+attempts to return <code>ref</code> for leaking the resource, this
+<code>s</code> from <code>ref</code> would not be able to reference that
+from <code>app</code> itself, since <code>runST</code> has a pretty
+special type:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode hs"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">runST ::</span> (<span class="kw">forall</span> s<span class="op">.</span> <span class="dt">ST</span> s a) <span class="ot">-&gt;</span> a</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">--               ^             ^</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">--               |             |</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">--               |             +--- Impossible to reference that inner `s`.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">--               |</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">--               +--- `s` is only available inside `app`.</span></span></code></pre></div>
+<p>So <code>s</code> is a hack, and poor Haskell has to enable the
+<code>RankNTypes</code> language extension for this.</p>
+<p>What's worse? Everyone is using this trick:</p>
+<ul>
+<li>Koka would <a
+href="https://koka-lang.github.io/koka/doc/book.html#sec-runst">try to
+eliminate</a> the internal <code>st&lt;h&gt;</code> effect by running
+<code>runST</code> on the function. If the resource is leaked, the
+compiler is able to leave that specific effect, and does better than
+Haskell.</li>
+<li>Rust's lifetime parameter is the same thing, and Clippy (Rust
+linter) will tell you if one could elide a fully generic lifetime
+parameter by, yup, running <code>runST</code>.</li>
+</ul>
+<p>What's even worse? People really want to track other kinds of
+resources, e.g. files, sockets, threads, locks... It's stupid to have
+all of them built-in, but Koka has no better ideas yet.</p>
+<p>And so far, you might already notice a terrible truth:</p>
+<blockquote>
+<p>Koka marks the effect <code>alloc&lt;h&gt;</code>, if one leaks the
+allocated memory to its caller.</p>
+</blockquote>
+<p>Which means, <strong>a coeffect system is often coupled with the
+effect system</strong>, they need to work well together, not just in
+isolation.</p>
+<p>You would see people keep talking about the fancy algebraic effects,
+or the classic linear/affine logic (for coeffects). But the truth is, we
+need to take both.</p>
+<h2 id="open-problem">Open problem</h2>
+<p>Now we've understood the background of this open problem. There are
+already many attempts from the greats:</p>
+<ul>
+<li><a
+href="https://cs-people.bu.edu/gaboardi/publication/GaboardiEtAlIicfp16.pdf">Combining
+Effects and Coeffects via Grading (ICFP '16)</a></li>
+<li><a href="https://bentnib.org/quantitative-type-theory.html">The
+Syntax and Semantics of Quantitative Type Theory (LICS '18)</a>
+<ul>
+<li>This paper is just about coeffects, but we have an implementation to
+play around: Idris 2!</li>
+<li><a
+href="https://idris2.readthedocs.io/en/latest/tutorial/multiplicities.html#resource-protocols">A
+Crash Course in Idris 2</a> shows examples of monadic effects and its
+quantitative type feature together.</li>
+</ul></li>
+<li><a href="https://dl.acm.org/doi/pdf/10.1145/3689750">Effects and
+Coeffects in Call-by-Push-Value (OOPSLA '24)</a></li>
+</ul>
+<p>I haven't dived deep enough into these works. Not to mention in that
+<em>ICFP '16 paper</em> above, there are <strong>16 additional
+laws</strong> beyond the basic typing rules for the
+<em>effect-over-coeffect</em> and <em>coeffect-over-effect</em> setups.
+It's hard to convince myself such system is practical enough for the end
+users.</p>
+<h2 id="my-attempts">My attempts</h2>
+<p>I'm not a professional for making and proving novelty. I just try
+collecting these existing ideas.</p>
+<h3 id="modality">Modality</h3>
+<p>First off, what to be attached with the information of a coeffect
+(e.g. how many times a variable should be used exactly, or at most)? The
+options are two: Types and bindings.</p>
+<p>Most of the systems decided to attach coeffects with a specific set
+of types:</p>
+<ul>
+<li><code>std::unique_ptr&lt;T&gt;</code> in C++, a unique pointer
+should be used exactly once (move semantics), and one could achieve this
+in a custom type with its copy constructor and copy assignment operator
+all deleted. And then people shoot their feet using
+<code>use-after-move</code> for fun.</li>
+<li><code>Box&lt;T&gt;</code> type and <code>Copy</code> trait in Rust,
+much saner.</li>
+<li>That ICFP '16 paper, and many linear/affine logic papers, mostly you
+could see <code>box A</code>/<code>unbox A</code> type operators, and
+some even used <code>🔒 A</code>/<code>🔓 A</code> to <a
+href="https://www.jonmsterling.com/gratzer-sterling-birkedal-2019.xml">look
+cool</a>.</li>
+</ul>
+
+    </article>
+</main>
+
+<footer>
+    <p>
+        All posts follow the <code>cc-by-4.0</code> license. See <a href="//github.com/anqur/anqur.github.io/issues">issues</a>?
+    </p>
+</footer>
+</body>
+
+</html>
