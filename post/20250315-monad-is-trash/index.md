@@ -248,7 +248,7 @@ and fully evaluated at compile-time. They won't really reside in any translation
 ```cpp
 [[overload, Alloc(T)]]
 //          ^~~~~~~^ effect of this function.
-void *
+T *
 malloc(typename T)
 {
     void *p [[move(Alloc(T))]] = malloc(sizeof(T));
