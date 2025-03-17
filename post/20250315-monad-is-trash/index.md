@@ -246,8 +246,8 @@ We write their overloaded functions for convenience. But we enforce that overloa
 and fully evaluated at compile-time. They won't really reside in any translation units.
 
 ```cpp
-[[overload, Alloc(T)]]
-//          ^~~~~~~^ effect of this function.
+[[overload, move(Alloc(T))]]
+//          ^~~~~~~~~~~~~^ effect and coeffect of this function.
 T *
 malloc(typename T)
 {

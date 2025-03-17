@@ -308,8 +308,8 @@ class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#c
 that overloaded definitions should be always inline and fully evaluated
 at compile-time. They won't really reside in any translation units.</p>
 <div class="sourceCode" id="cb6"><pre
-class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">overload</span><span class="op">,</span><span class="at"> Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">)]]</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">//          ^~~~~~~^ effect of this function.</span></span>
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">overload</span><span class="op">,</span><span class="at"> move</span><span class="op">(</span><span class="at">Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">))]]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">//          ^~~~~~~~~~~~~^ effect and coeffect of this function.</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>T <span class="op">*</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>malloc<span class="op">(</span><span class="kw">typename</span> T<span class="op">)</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
