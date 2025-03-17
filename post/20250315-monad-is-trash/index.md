@@ -167,15 +167,157 @@ I'm not a professional for making and proving novelty. I just try collecting the
 ### Modality
 
 First off, what to be attached with the information of a coeffect (e.g. how many times a variable should be used
-exactly, or at most)? The options are two: Types and bindings.
+exactly, or at most)? The options are two: Adding new types or adding to existing constructs (e.g. bindings and
+functions).
 
-Most of the systems decided to attach coeffects with a specific set of types:
+Most systems decided to attach coeffects with a dedicated new set of types:
 
 * `std::unique_ptr<T>` in C++, a unique pointer should be used exactly once (move semantics), and one could achieve this
   in a custom type with its copy constructor and copy assignment operator all deleted. And then people shoot their feet
   using `use-after-move` for fun.
 * `Box<T>` type and `Copy` trait in Rust, much saner.
-* That ICFP '16 paper, and many linear/affine logic papers, mostly you could see `box A`/`unbox A` type operators, and
-  some even used `🔒 A`/`🔓 A` to [look cool].
+* That ICFP '16 paper, and many linear/affine logic papers, mostly you could see `box T`/`unbox T` type operators, and
+  some even used `🔒 T`/`🔓 T` to [look cool].
+
+It's just straightforward to use a type former for constructing a coeffect, and a type eliminator for destructing it.
+People are so used to it. The drawbacks are not apparent, until you relate to monads:
+
+* It's hard to compose or extend such constructs:
+    * You've seen the types `Box<T>`, `&T` and `&mut T` in Rust coming out of nowhere. You've seen implicit rules like
+      `&Box<T>` would be seamlessly used as `&T`, but when it fails to work, one writes `a.as_ref()` instead of `&a`.
+    * You don't see any resources like files are able to track using exactly the approach for types like `&T`. The
+      manual tells you to use RAII and the `Drop` trait.
+* More and more primitive types are added to the compiler, more rules are added for them being poorly composable and
+  extendable.
+    * You might feel weird about why even the `Box<T>` type comes from the void, isn't there just [source code for it]?
+      Then read more carefully and you would find the comment above it:
+
+> The declaration of the `Box` struct must be kept in sync with the compiler or ICEs will happen.
+
+So the alternative approach looks quite intriguing: **Adding (co)effects to existing types**. That's how modality works
+in Koka and Idris 2.
+
+* Koka adds effect types on function types and (so naturally) the function definitions.
+* Idris 2 adds coeffects on function parameters only.
+
+So it might be interesting if we can specify effects and coeffects in:
+
+* Function parameters
+* Variable declarators (a.k.a. bindings), not just parameters
+* Function types
+
+We will give code examples to show how. Here comes the next question.
 
 [look cool]: https://www.jonmsterling.com/gratzer-sterling-birkedal-2019.xml
+
+[source code for it]: https://doc.rust-lang.org/std/boxed/struct.Box.html
+
+### Handling coeffects
+
+How to define a function that closes/reclaims a resource? Of course, we should not use the `s`/`runST` trick again.
+
+My initial thought tells me one could also specify this behavior *using parameters and variable declarators*. But the
+biggest concern might be, if there is a variable with unlimited usage (e.g. of a primitive arithmetic type), every use
+of it might not be considered as some resource reclamation. Or simply it's just not a resource, since it won't be
+running out.
+
+By far, we should end up with something like Koka and Idris 2 altogether.
+
+### Wrapping up
+
+> 💡 Below are the personal ideas. Feel free to judge.
+
+Let's write some code in a new language toy like C. We declare the prototypes of `malloc` and `free`, as the
+lowest-level memory management primitives (although `aligned_alloc` should be better):
+
+```c
+void *malloc(size_t sz);
+void free(void *p);
+```
+
+We define a new effect for memory allocation:
+
+```cpp
+[[effect]]
+typedef Alloc(typename T);
+```
+
+We write their overloaded functions for convenience. But we enforce that overloaded definitions should be always inline
+and fully evaluated at compile-time. They won't really reside in any translation units.
+
+```cpp
+[[overload, Alloc(T)]]
+//          ^~~~~~~^ effect of this function.
+void *
+malloc(typename T)
+{
+    void *p [[move(Alloc(T))]] = malloc(sizeof(T));
+//            ^~~~~~~~~~~~~^ coeffect attached to the declarator:
+//                           `p` is used exactly once.
+    return p;
+}
+```
+
+And the overloaded `free` to reclaim the memory:
+
+```cpp
+[[overload]]
+void
+free(typename T, T *p [[move(Alloc(T))]])
+//                      ^~~~~~~~~~~~~^
+//                      "closes" the coeffect.
+{
+    free(p);
+}
+```
+
+Now, some interesting examples that would be rejected by the typechecker:
+
+```cpp
+void f0() {
+    int *p = malloc(); // type parameter `T` is inferred.
+
+    // ❌ error: variable `p` must be used or returned.
+}
+
+void f1() {
+    int *p = malloc();
+    free(p); // type parameter `T` is inferred.
+
+    free(p); // ❌ error: variable `p` is already moved.
+}
+
+void f2() {
+    int *p = malloc();
+    if (true) {
+        free(p);
+        return;
+    }
+
+    // ❌ error: variable `p` must be used in all branches.
+}
+
+int * // ❌ error: function `f3` must be annotated with effect `Alloc(int)`.
+f3()
+{
+    return malloc();
+}
+```
+
+## More thoughts?
+
+We're still pretty far from changing the game, obviously. Some problems that are still very challenging:
+
+* Flexible pointer types. Pointers could be:
+    * Of weird semantics with the `void *`.
+    * Immutable and mutable references (or views) of some existing pointers. There are related
+      [practices in ATS using view types] for accesses.
+    * Restrict (for aliasing), just like `Box<T>` and `std::unique_ptr<T>`.
+    * In, out, inout parameters.
+    * Used for pointer arithmetic.
+* Fully/partially initialized and uninitialized memory.
+* For the problems above, their interactions with struct fields.
+
+And finally, I should get back for the journey...
+
+[practices in ATS using view types]: https://ats-lang.sourceforge.net/DOCUMENT/INT2PROGINATS/HTML/HTMLTOC/c3321.html#views_for_pointers

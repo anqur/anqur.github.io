@@ -215,9 +215,10 @@ collecting these existing ideas.</p>
 <h3 id="modality">Modality</h3>
 <p>First off, what to be attached with the information of a coeffect
 (e.g. how many times a variable should be used exactly, or at most)? The
-options are two: Types and bindings.</p>
-<p>Most of the systems decided to attach coeffects with a specific set
-of types:</p>
+options are two: Adding new types or adding to existing constructs (e.g.
+bindings and functions).</p>
+<p>Most systems decided to attach coeffects with a dedicated new set of
+types:</p>
 <ul>
 <li><code>std::unique_ptr&lt;T&gt;</code> in C++, a unique pointer
 should be used exactly once (move semantics), and one could achieve this
@@ -227,11 +228,157 @@ all deleted. And then people shoot their feet using
 <li><code>Box&lt;T&gt;</code> type and <code>Copy</code> trait in Rust,
 much saner.</li>
 <li>That ICFP '16 paper, and many linear/affine logic papers, mostly you
-could see <code>box A</code>/<code>unbox A</code> type operators, and
-some even used <code>🔒 A</code>/<code>🔓 A</code> to <a
+could see <code>box T</code>/<code>unbox T</code> type operators, and
+some even used <code>🔒 T</code>/<code>🔓 T</code> to <a
 href="https://www.jonmsterling.com/gratzer-sterling-birkedal-2019.xml">look
 cool</a>.</li>
 </ul>
+<p>It's just straightforward to use a type former for constructing a
+coeffect, and a type eliminator for destructing it. People are so used
+to it. The drawbacks are not apparent, until you relate to monads:</p>
+<ul>
+<li>It's hard to compose or extend such constructs:
+<ul>
+<li>You've seen the types <code>Box&lt;T&gt;</code>, <code>&amp;T</code>
+and <code>&amp;mut T</code> in Rust coming out of nowhere. You've seen
+implicit rules like <code>&amp;Box&lt;T&gt;</code> would be seamlessly
+used as <code>&amp;T</code>, but when it fails to work, one writes
+<code>a.as_ref()</code> instead of <code>&amp;a</code>.</li>
+<li>You don't see any resources like files are able to track using
+exactly the approach for types like <code>&amp;T</code>. The manual
+tells you to use RAII and the <code>Drop</code> trait.</li>
+</ul></li>
+<li>More and more primitive types are added to the compiler, more rules
+are added for them being poorly composable and extendable.
+<ul>
+<li>You might feel weird about why even the <code>Box&lt;T&gt;</code>
+type comes from the void, isn't there just <a
+href="https://doc.rust-lang.org/std/boxed/struct.Box.html">source code
+for it</a>? Then read more carefully and you would find the comment
+above it:</li>
+</ul></li>
+</ul>
+<blockquote>
+<p>The declaration of the <code>Box</code> struct must be kept in sync
+with the compiler or ICEs will happen.</p>
+</blockquote>
+<p>So the alternative approach looks quite intriguing: <strong>Adding
+(co)effects to existing types</strong>. That's how modality works in
+Koka and Idris 2.</p>
+<ul>
+<li>Koka adds effect types on function types and (so naturally) the
+function definitions.</li>
+<li>Idris 2 adds coeffects on function parameters only.</li>
+</ul>
+<p>So it might be interesting if we can specify effects and coeffects
+in:</p>
+<ul>
+<li>Function parameters</li>
+<li>Variable declarators (a.k.a. bindings), not just parameters</li>
+<li>Function types</li>
+</ul>
+<p>We will give code examples to show how. Here comes the next
+question.</p>
+<h3 id="handling-coeffects">Handling coeffects</h3>
+<p>How to define a function that closes/reclaims a resource? Of course,
+we should not use the <code>s</code>/<code>runST</code> trick again.</p>
+<p>My initial thought tells me one could also specify this behavior
+<em>using parameters and variable declarators</em>. But the biggest
+concern might be, if there is a variable with unlimited usage (e.g. of a
+primitive arithmetic type), every use of it might not be considered as
+some resource reclamation. Or simply it's just not a resource, since it
+won't be running out.</p>
+<p>By far, we should end up with something like Koka and Idris 2
+altogether.</p>
+<h3 id="wrapping-up">Wrapping up</h3>
+<blockquote>
+<p>💡 Below are the personal ideas. Feel free to judge.</p>
+</blockquote>
+<p>Let's write some code in a new language toy like C. We declare the
+prototypes of <code>malloc</code> and <code>free</code>, as the
+lowest-level memory management primitives (although
+<code>aligned_alloc</code> should be better):</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span>malloc<span class="op">(</span><span class="dt">size_t</span> sz<span class="op">);</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> free<span class="op">(</span><span class="dt">void</span> <span class="op">*</span>p<span class="op">);</span></span></code></pre></div>
+<p>We define a new effect for memory allocation:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">effect</span><span class="op">]]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> Alloc<span class="op">(</span><span class="kw">typename</span> T<span class="op">);</span></span></code></pre></div>
+<p>We write their overloaded functions for convenience. But we enforce
+that overloaded definitions should be always inline and fully evaluated
+at compile-time. They won't really reside in any translation units.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">overload</span><span class="op">,</span><span class="at"> Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">)]]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">//          ^~~~~~~^ effect of this function.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> <span class="op">*</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>malloc<span class="op">(</span><span class="kw">typename</span> T<span class="op">)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> <span class="op">*</span>p <span class="op">[[</span><span class="at">move</span><span class="op">(</span><span class="at">Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">))]]</span> <span class="op">=</span> malloc<span class="op">(</span><span class="kw">sizeof</span><span class="op">(</span>T<span class="op">));</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">//            ^~~~~~~~~~~~~^ coeffect attached to the declarator:</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">//                           `p` is used exactly once.</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p<span class="op">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>And the overloaded <code>free</code> to reclaim the memory:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">[[</span><span class="at">overload</span><span class="op">]]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>free<span class="op">(</span><span class="kw">typename</span> T<span class="op">,</span> T <span class="op">*</span>p <span class="op">[[</span><span class="at">move</span><span class="op">(</span><span class="at">Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">))]])</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">//                      ^~~~~~~~~~~~~^</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">//                      &quot;closes&quot; the coeffect.</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>p<span class="op">);</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Now, some interesting examples that would be rejected by the
+typechecker:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f0<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>p <span class="op">=</span> malloc<span class="op">();</span> <span class="co">// type parameter `T` is inferred.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ❌ error: variable `p` must be used or returned.</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f1<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>p <span class="op">=</span> malloc<span class="op">();</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>p<span class="op">);</span> <span class="co">// type parameter `T` is inferred.</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>p<span class="op">);</span> <span class="co">// ❌ error: variable `p` is already moved.</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f2<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>p <span class="op">=</span> malloc<span class="op">();</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span><span class="kw">true</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        free<span class="op">(</span>p<span class="op">);</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ❌ error: variable `p` must be used in all branches.</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> <span class="op">*</span> <span class="co">// ❌ error: function `f3` must be annotated with effect `Alloc(int)`.</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>f3<span class="op">()</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> malloc<span class="op">();</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="more-thoughts">More thoughts?</h2>
+<p>We're still pretty far from changing the game, obviously. Some
+problems that are still very challenging:</p>
+<ul>
+<li>Flexible pointer types. Pointers could be:
+<ul>
+<li>Of weird semantics with the <code>void *</code>.</li>
+<li>Immutable and mutable references (or views) of some existing
+pointers. There are related <a
+href="https://ats-lang.sourceforge.net/DOCUMENT/INT2PROGINATS/HTML/HTMLTOC/c3321.html#views_for_pointers">practices
+in ATS using view types</a> for accesses.</li>
+<li>Restrict (for aliasing), just like <code>Box&lt;T&gt;</code> and
+<code>std::unique_ptr&lt;T&gt;</code>.</li>
+<li>In, out, inout parameters.</li>
+<li>Used for pointer arithmetic.</li>
+</ul></li>
+<li>Fully/partially initialized and uninitialized memory.</li>
+<li>For the problems above, their interactions with struct fields.</li>
+</ul>
+<p>And finally, I should get back for the journey...</p>
 
     </article>
 </main>
