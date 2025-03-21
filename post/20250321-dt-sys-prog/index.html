@@ -29,14 +29,22 @@
     <article>
         <h1 id="systems-programming-in-dependent-types">Systems programming in
 dependent types</h1>
+<p>Done:</p>
 <ul>
 <li>Coeffects over effects.</li>
 <li>Pointer read/write intrinsics (type of pointers, memory locations,
 and memory layout proofs).</li>
 <li>Invalidate on-stack locations.</li>
-<li>How to deal with <code>char const*</code></li>
+<li>How to deal with <code>char const*</code>.</li>
+<li>How to implement RAII (<code>defer</code> is bad):
+<code>defer</code> as the affine logic. <code>Defer</code> trait.</li>
+<li><code>auto f() -&gt; T</code> should be everywhere.</li>
+</ul>
+<p>Doing:</p>
+<ul>
 <li>How to deal with <code>char[]</code> (<code>char</code> slice,
-flexible array member, and VLA)</li>
+flexible array member, <del>and VLA</del>).</li>
+<li>How to deal with <code>void</code> and <code>void*</code>.</li>
 </ul>
 
     </article>
