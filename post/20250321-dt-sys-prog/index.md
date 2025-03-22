@@ -7,9 +7,13 @@ Done:
 * Invalidate on-stack locations.
 * How to deal with `char const*`.
 * How to implement RAII (`defer` is bad): `defer` as the affine logic. `Defer` trait.
-* `auto f() -> T` should be everywhere.
+* `auto f() -> T` should be everywhere: Good for long return types.
+* How to deal with `char[]` (`char` slice, ~~flexible array member, and VLA~~): VLA should be dropped, and FAM should be
+  implemented using static reflection.
+* Dynamic memory safety, hardened runtime, and Clang's bounds checking.
+* How to deal with `void` and `void*`: `void*` is just an unknown memory layout, it should be easy to tag via a generic
+  `l: Addr` location.
 
 Doing:
 
-* How to deal with `char[]` (`char` slice, flexible array member, ~~and VLA~~).
-* How to deal with `void` and `void*`.
+* Initializer, constructor, `Default` trait?

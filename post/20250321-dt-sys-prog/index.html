@@ -38,13 +38,20 @@ and memory layout proofs).</li>
 <li>How to deal with <code>char const*</code>.</li>
 <li>How to implement RAII (<code>defer</code> is bad):
 <code>defer</code> as the affine logic. <code>Defer</code> trait.</li>
-<li><code>auto f() -&gt; T</code> should be everywhere.</li>
+<li><code>auto f() -&gt; T</code> should be everywhere: Good for long
+return types.</li>
+<li>How to deal with <code>char[]</code> (<code>char</code> slice,
+<del>flexible array member, and VLA</del>): VLA should be dropped, and
+FAM should be implemented using static reflection.</li>
+<li>Dynamic memory safety, hardened runtime, and Clang's bounds
+checking.</li>
+<li>How to deal with <code>void</code> and <code>void*</code>:
+<code>void*</code> is just an unknown memory layout, it should be easy
+to tag via a generic <code>l: Addr</code> location.</li>
 </ul>
 <p>Doing:</p>
 <ul>
-<li>How to deal with <code>char[]</code> (<code>char</code> slice,
-flexible array member, <del>and VLA</del>).</li>
-<li>How to deal with <code>void</code> and <code>void*</code>.</li>
+<li>Initializer, constructor, <code>Default</code> trait?</li>
 </ul>
 
     </article>
