@@ -17,7 +17,11 @@ Done:
 * Initializer, constructor, `Default` trait? We allow custom empty initialization at the definition of a struct (just
   like C++), but the parameters would be annotated with quantity `0`, which means they need to be calculated in the
   compile-time, which rejects runtime logic.
+* How to deal with many POSIX standard definitions? E.g. `sockaddr_in` (struct type) and `AF_INET` enumeration value: We
+  could define them manually at first, maybe later we could have some libclang-based code generation.
+
+Not planned:
+
+* ~~Better way to initialize things at runtime using oneliners.~~ No such situations needed.
 
 Doing:
-
-* Better way to initialize things at runtime using oneliners.

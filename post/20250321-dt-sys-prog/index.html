@@ -55,11 +55,17 @@ custom empty initialization at the definition of a struct (just like
 C++), but the parameters would be annotated with quantity
 <code>0</code>, which means they need to be calculated in the
 compile-time, which rejects runtime logic.</li>
+<li>How to deal with many POSIX standard definitions? E.g.
+<code>sockaddr_in</code> (struct type) and <code>AF_INET</code>
+enumeration value: We could define them manually at first, maybe later
+we could have some libclang-based code generation.</li>
+</ul>
+<p>Not planned:</p>
+<ul>
+<li><del>Better way to initialize things at runtime using
+oneliners.</del> No such situations needed.</li>
 </ul>
 <p>Doing:</p>
-<ul>
-<li>Better way to initialize things at runtime using oneliners.</li>
-</ul>
 
     </article>
 </main>
