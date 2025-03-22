@@ -37,7 +37,9 @@ and memory layout proofs).</li>
 <li>Invalidate on-stack locations.</li>
 <li>How to deal with <code>char const*</code>.</li>
 <li>How to implement RAII (<code>defer</code> is bad):
-<code>defer</code> as the affine logic. <code>Defer</code> trait.</li>
+<code>defer</code> as the affine logic. <code>Defer</code> trait. The
+<code>defer</code> logic would be run at the block end, so we don't
+consider the <code>guard</code> keyword in the related C proposal.</li>
 <li><code>auto f() -&gt; T</code> should be everywhere: Good for long
 return types.</li>
 <li>How to deal with <code>char[]</code> (<code>char</code> slice,
@@ -48,10 +50,15 @@ checking.</li>
 <li>How to deal with <code>void</code> and <code>void*</code>:
 <code>void*</code> is just an unknown memory layout, it should be easy
 to tag via a generic <code>l: Addr</code> location.</li>
+<li>Initializer, constructor, <code>Default</code> trait? We allow
+custom empty initialization at the definition of a struct (just like
+C++), but the parameters would be annotated with quantity
+<code>0</code>, which means they need to be calculated in the
+compile-time, which rejects runtime logic.</li>
 </ul>
 <p>Doing:</p>
 <ul>
-<li>Initializer, constructor, <code>Default</code> trait?</li>
+<li>Better way to initialize things at runtime using oneliners.</li>
 </ul>
 
     </article>
