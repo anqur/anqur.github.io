@@ -23,5 +23,12 @@ Done:
 Not planned:
 
 * ~~Better way to initialize things at runtime using oneliners.~~ No such situations needed.
+* ~~Dart style syntax `..`, or Kotlin `with`, or Java's builder pattern.~~ RVO is not good for everywhere.
 
 Doing:
+
+* Must-use initializer:
+    * Call-by-reference, unified `.`: We don't do this, because C users would be confused with a gone `->` syntax, and
+      once `->` is preserved, `a.f(1, 2)` and `a->f(1, 2)` would be both valid and confusing due to call-by-reference.
+    * How to be must-use?
+    * Flat-level method definitions?

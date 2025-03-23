@@ -64,8 +64,22 @@ we could have some libclang-based code generation.</li>
 <ul>
 <li><del>Better way to initialize things at runtime using
 oneliners.</del> No such situations needed.</li>
+<li><del>Dart style syntax <code>..</code>, or Kotlin <code>with</code>,
+or Java's builder pattern.</del> RVO is not good for everywhere.</li>
 </ul>
 <p>Doing:</p>
+<ul>
+<li>Must-use initializer:
+<ul>
+<li>Call-by-reference, unified <code>.</code>: We don't do this, because
+C users would be confused with a gone <code>-&gt;</code> syntax, and
+once <code>-&gt;</code> is preserved, <code>a.f(1, 2)</code> and
+<code>a-&gt;f(1, 2)</code> would be both valid and confusing due to
+call-by-reference.</li>
+<li>How to be must-use?</li>
+<li>Flat-level method definitions?</li>
+</ul></li>
+</ul>
 
     </article>
 </main>
