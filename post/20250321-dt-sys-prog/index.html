@@ -58,7 +58,13 @@ compile-time, which rejects runtime logic.</li>
 <li>How to deal with many POSIX standard definitions? E.g.
 <code>sockaddr_in</code> (struct type) and <code>AF_INET</code>
 enumeration value: We could define them manually at first, maybe later
-we could have some libclang-based code generation.</li>
+we could have some libclang-based code generation.
+<ul>
+<li>Types like <code>pthread_mutex_t</code> are way more
+complicated.</li>
+</ul></li>
+<li>Flat-level method definitions: <code>namespace Data {}</code> for
+<code>impl Data {}</code>-like constructs.</li>
 </ul>
 <p>Not planned:</p>
 <ul>
@@ -77,9 +83,19 @@ once <code>-&gt;</code> is preserved, <code>a.f(1, 2)</code> and
 <code>a-&gt;f(1, 2)</code> would be both valid and confusing due to
 call-by-reference.</li>
 <li>How to be must-use?</li>
-<li>Flat-level method definitions?</li>
 </ul></li>
+<li>Unify following snippets:</li>
 </ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Mutex mu <span class="op">=</span> <span class="op">{};</span> <span class="co">// empty initialization</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">();</span> <span class="co">// must-use custom initialization</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span></code></pre></div>
+<p>vs</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Mutex <span class="op">*</span>mu <span class="op">=</span> malloc<span class="op">();</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(!</span>mu<span class="op">)</span> <span class="cf">return</span><span class="op">;</span> <span class="co">// custom OOM handling</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>memset<span class="op">(</span>mu<span class="op">,</span> <span class="dv">0</span><span class="op">);</span> <span class="co">// empty initialization</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">();</span> <span class="co">// must-use custom initialization</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>free<span class="op">(</span>mu<span class="op">);</span> <span class="co">// memory reclamation</span></span></code></pre></div>
 
     </article>
 </main>

@@ -19,6 +19,8 @@ Done:
   compile-time, which rejects runtime logic.
 * How to deal with many POSIX standard definitions? E.g. `sockaddr_in` (struct type) and `AF_INET` enumeration value: We
   could define them manually at first, maybe later we could have some libclang-based code generation.
+    * Types like `pthread_mutex_t` are way more complicated.
+* Flat-level method definitions: `namespace Data {}` for `impl Data {}`-like constructs.
 
 Not planned:
 
@@ -31,4 +33,21 @@ Doing:
     * Call-by-reference, unified `.`: We don't do this, because C users would be confused with a gone `->` syntax, and
       once `->` is preserved, `a.f(1, 2)` and `a->f(1, 2)` would be both valid and confusing due to call-by-reference.
     * How to be must-use?
-    * Flat-level method definitions?
+* Unify following snippets:
+
+```c
+Mutex mu = {}; // empty initialization
+mu.init(); // must-use custom initialization
+mu.destroy(); // must-use custom finalization
+```
+
+vs
+
+```c
+Mutex *mu = malloc();
+if (!mu) return; // custom OOM handling
+memset(mu, 0); // empty initialization
+mu.init(); // must-use custom initialization
+mu.destroy(); // must-use custom finalization
+free(mu); // memory reclamation
+```
