@@ -65,6 +65,53 @@ complicated.</li>
 </ul></li>
 <li>Flat-level method definitions: <code>namespace Data {}</code> for
 <code>impl Data {}</code>-like constructs.</li>
+<li>Unify following snippets:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Mutex mu <span class="op">=</span> <span class="op">{};</span> <span class="co">// empty initialization</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">()</span> <span class="cf">return</span><span class="op">;</span> <span class="co">// must-use custom initialization</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                  <span class="co">// custom initialization error handling</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span></code></pre></div>
+<p>vs</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Mutex <span class="op">*</span>mu <span class="op">=</span> malloc<span class="op">()</span> <span class="cf">return</span><span class="op">;</span> <span class="co">// custom OOM handling</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>memset<span class="op">(</span>mu<span class="op">,</span> <span class="dv">0</span><span class="op">);</span> <span class="co">// empty initialization</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">()</span> <span class="cf">return</span><span class="op">;</span> <span class="co">// must-use custom initialization</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                  <span class="co">// custom initialization error handling</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>free<span class="op">(</span>mu<span class="op">);</span> <span class="co">// memory reclamation</span></span></code></pre></div>
+<p>Answer:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Mutex mu <span class="op">=</span> <span class="op">()</span> <span class="cf">else</span> trap<span class="op">;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>lock<span class="op">();</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>unlock<span class="op">();</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>destroy<span class="op">();</span></span></code></pre></div>
+<p>vs</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// p is the returned ponter, ret is the result from convetional initializer.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Mutex <span class="op">*</span>mu <span class="op">=</span> malloc<span class="op">()</span> <span class="cf">else</span> <span class="op">(</span>p<span class="op">,</span> ret<span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">};</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>lock<span class="op">();</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>unlock<span class="op">();</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>mu<span class="op">-&gt;</span>destroy<span class="op">();</span></span></code></pre></div>
+<p><code>trap</code> is:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> trap<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> <span class="dt">const</span><span class="op">*</span> traces<span class="op">[</span><span class="dv">10</span><span class="op">];</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    backtrace_symbols_fd<span class="op">(</span>traces<span class="op">,</span> <span class="dv">10</span><span class="op">,</span> stderr<span class="op">);</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    raise<span class="op">(</span>SIGTRAP<span class="op">);</span> <span class="co">// so if a debugger is attached, we could stop here.</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<ul>
+<li>Must-use initializer:
+<ul>
+<li>Call-by-reference, unified <code>.</code>: <del>We don't do this,
+because C users would be confused with a gone <code>-&gt;</code> syntax,
+and once <code>-&gt;</code> is preserved, <code>a.f(1, 2)</code> and
+<code>a-&gt;f(1, 2)</code> would be both valid and confusing due to
+call-by-reference.</del>
+<ul>
+<li>We have to do call-by-reference on the so-called "conventional
+initializer", and <code>-&gt;</code> must be used, <code>.</code> is not
+allowed for call-by-reference.</li>
+</ul></li>
+<li>How to be must-use?</li>
+</ul></li>
+<li>It's hard to unify <code>mu-&gt;destroy</code> and
+<code>free</code>: The former could contain the latter.</li>
 </ul>
 <p>Not planned:</p>
 <ul>
@@ -74,28 +121,6 @@ oneliners.</del> No such situations needed.</li>
 or Java's builder pattern.</del> RVO is not good for everywhere.</li>
 </ul>
 <p>Doing:</p>
-<ul>
-<li>Must-use initializer:
-<ul>
-<li>Call-by-reference, unified <code>.</code>: We don't do this, because
-C users would be confused with a gone <code>-&gt;</code> syntax, and
-once <code>-&gt;</code> is preserved, <code>a.f(1, 2)</code> and
-<code>a-&gt;f(1, 2)</code> would be both valid and confusing due to
-call-by-reference.</li>
-<li>How to be must-use?</li>
-</ul></li>
-<li>Unify following snippets:</li>
-</ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Mutex mu <span class="op">=</span> <span class="op">{};</span> <span class="co">// empty initialization</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">();</span> <span class="co">// must-use custom initialization</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span></code></pre></div>
-<p>vs</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Mutex <span class="op">*</span>mu <span class="op">=</span> malloc<span class="op">();</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(!</span>mu<span class="op">)</span> <span class="cf">return</span><span class="op">;</span> <span class="co">// custom OOM handling</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>memset<span class="op">(</span>mu<span class="op">,</span> <span class="dv">0</span><span class="op">);</span> <span class="co">// empty initialization</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>init<span class="op">();</span> <span class="co">// must-use custom initialization</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>mu<span class="op">.</span>destroy<span class="op">();</span> <span class="co">// must-use custom finalization</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>free<span class="op">(</span>mu<span class="op">);</span> <span class="co">// memory reclamation</span></span></code></pre></div>
 
     </article>
 </main>

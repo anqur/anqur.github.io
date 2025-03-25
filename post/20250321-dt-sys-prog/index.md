@@ -21,6 +21,62 @@ Done:
   could define them manually at first, maybe later we could have some libclang-based code generation.
     * Types like `pthread_mutex_t` are way more complicated.
 * Flat-level method definitions: `namespace Data {}` for `impl Data {}`-like constructs.
+* Unify following snippets:
+
+```c
+Mutex mu = {}; // empty initialization
+mu.init() return; // must-use custom initialization
+                  // custom initialization error handling
+mu.destroy(); // must-use custom finalization
+```
+
+vs
+
+```c
+Mutex *mu = malloc() return; // custom OOM handling
+memset(mu, 0); // empty initialization
+mu.init() return; // must-use custom initialization
+                  // custom initialization error handling
+mu.destroy(); // must-use custom finalization
+free(mu); // memory reclamation
+```
+
+Answer:
+
+```c
+Mutex mu = () else trap;
+mu->lock();
+mu->unlock();
+mu->destroy();
+```
+
+vs
+
+```c
+// p is the returned ponter, ret is the result from convetional initializer.
+Mutex *mu = malloc() else (p, ret) { ... };
+mu->lock();
+mu->unlock();
+mu->destroy();
+```
+
+`trap` is:
+
+```c
+void trap() {
+    char const* traces[10];
+    backtrace_symbols_fd(traces, 10, stderr);
+    raise(SIGTRAP); // so if a debugger is attached, we could stop here.
+}
+```
+
+* Must-use initializer:
+    * Call-by-reference, unified `.`: ~~We don't do this, because C users would be confused with a gone `->` syntax, and
+      once `->` is preserved, `a.f(1, 2)` and `a->f(1, 2)` would be both valid and confusing due to call-by-reference.~~
+        * We have to do call-by-reference on the so-called "conventional initializer", and `->` must be used, `.` is not
+          allowed for call-by-reference.
+    * How to be must-use?
+* It's hard to unify `mu->destroy` and `free`: The former could contain the latter.
 
 Not planned:
 
@@ -28,26 +84,3 @@ Not planned:
 * ~~Dart style syntax `..`, or Kotlin `with`, or Java's builder pattern.~~ RVO is not good for everywhere.
 
 Doing:
-
-* Must-use initializer:
-    * Call-by-reference, unified `.`: We don't do this, because C users would be confused with a gone `->` syntax, and
-      once `->` is preserved, `a.f(1, 2)` and `a->f(1, 2)` would be both valid and confusing due to call-by-reference.
-    * How to be must-use?
-* Unify following snippets:
-
-```c
-Mutex mu = {}; // empty initialization
-mu.init(); // must-use custom initialization
-mu.destroy(); // must-use custom finalization
-```
-
-vs
-
-```c
-Mutex *mu = malloc();
-if (!mu) return; // custom OOM handling
-memset(mu, 0); // empty initialization
-mu.init(); // must-use custom initialization
-mu.destroy(); // must-use custom finalization
-free(mu); // memory reclamation
-```
