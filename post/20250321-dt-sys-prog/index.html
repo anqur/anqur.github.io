@@ -110,6 +110,57 @@ allowed for call-by-reference.</li>
 </ul></li>
 <li>How to be must-use?</li>
 </ul></li>
+</ul>
+<p>A "conventional initializer" must be of this form:
+<code>(typename T, T&amp; value) -&gt; void</code>. Then we could unify
+the on-stack and on-heap initialization of a variable.</p>
+<p>Struct definition:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Mutex <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">pthread_mutex_t</span> mu<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">namespace</span> Mutex <span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span><span class="op">(</span><span class="kw">this</span><span class="op">&amp;,</span> outerr <span class="dt">int</span> e<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Do the &quot;conventional&quot; initialization. */</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>e <span class="op">=</span> pthread_mutex_init<span class="op">(</span><span class="kw">this</span><span class="op">);</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>On-stack initialization:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> m <span class="op">=</span> Mutex<span class="op">(&amp;)</span> <span class="cf">else</span> <span class="op">(</span>e<span class="op">)</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span></code></pre></div>
+<p>On-heap initialization:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Mutex <span class="op">*</span>m <span class="op">=</span> malloc<span class="op">()</span> <span class="cf">else</span> <span class="op">(</span>p<span class="op">,</span> e<span class="op">)</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span></code></pre></div>
+<p>The implementation of this <code>malloc</code>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> malloc<span class="op">(</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* T requires &quot;conventional&quot; initialization. */</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">typename</span> T <span class="kw">requires</span> ConvInit<span class="op">(</span>T<span class="op">),</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">typename</span> Err<span class="op">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Err requires OutErr concept here. */</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    outerr Err e<span class="op">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* T requires Out concept here. */</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    out T ptr</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="op">)</span> <span class="op">-&gt;</span> <span class="op">[[</span><span class="at">move</span><span class="op">(</span><span class="at">Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">))]]</span> <span class="dt">void</span> <span class="op">{</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> p <span class="op">[[</span><span class="at">move</span><span class="op">(</span><span class="at">Alloc</span><span class="op">(</span><span class="at">T</span><span class="op">))]]</span> <span class="op">=</span> malloc<span class="op">(</span><span class="kw">sizeof</span><span class="op">(</span>T<span class="op">));</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>p<span class="op">)</span> <span class="op">{</span> <span class="cf">return</span><span class="op">;</span> <span class="op">}</span> <span class="co">/* no need to assign `nullptr` to `ptr`, it&#39;s required in `Out`, like `OutErr` */</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    p<span class="op">-&gt;</span>empty_init<span class="op">();</span> <span class="co">/* empty initialization */</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    p<span class="op">-&gt;</span>conv_init<span class="op">(</span>e<span class="op">);</span> <span class="co">/* conventional initialization */</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Related "concepts":</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> Out<span class="op">(</span><span class="kw">typename</span> T<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> initial_value<span class="op">()</span> <span class="op">-&gt;</span> T<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> <span class="dt">successful_type</span><span class="op">()</span> <span class="op">-&gt;</span> <span class="kw">typename</span> <span class="op">{</span> <span class="cf">return</span> T<span class="op">*;</span> <span class="op">}</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">concept</span> OutErr<span class="op">(</span><span class="kw">typename</span> T<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> initial_value<span class="op">()</span> <span class="op">-&gt;</span> T<span class="op">;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<ul>
 <li>It's hard to unify <code>mu-&gt;destroy</code> and
 <code>free</code>: The former could contain the latter.</li>
 </ul>

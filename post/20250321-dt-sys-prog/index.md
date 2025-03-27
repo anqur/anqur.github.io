@@ -76,6 +76,71 @@ void trap() {
         * We have to do call-by-reference on the so-called "conventional initializer", and `->` must be used, `.` is not
           allowed for call-by-reference.
     * How to be must-use?
+
+A "conventional initializer" must be of this form: `(typename T, T& value) -> void`. Then we could unify the on-stack
+and on-heap initialization of a variable.
+
+Struct definition:
+
+```cpp
+struct Mutex {
+    pthread_mutex_t mu;
+};
+
+namespace Mutex {
+
+auto(this&, outerr int e) {
+    /* Do the "conventional" initialization. */
+    *e = pthread_mutex_init(this);
+}
+
+}
+```
+
+On-stack initialization:
+
+```cpp
+auto m = Mutex(&) else (e) { /* ... */ };
+```
+
+On-heap initialization:
+
+```cpp
+Mutex *m = malloc() else (p, e) { /* ... */ };
+```
+
+The implementation of this `malloc`:
+
+```cpp
+auto malloc(
+    /* T requires "conventional" initialization. */
+    typename T requires ConvInit(T),
+    typename Err,
+    /* Err requires OutErr concept here. */
+    outerr Err e,
+    /* T requires Out concept here. */
+    out T ptr
+) -> [[move(Alloc(T))]] void {
+    auto p [[move(Alloc(T))]] = malloc(sizeof(T));
+    if (!p) { return; } /* no need to assign `nullptr` to `ptr`, it's required in `Out`, like `OutErr` */
+    p->empty_init(); /* empty initialization */
+    p->conv_init(e); /* conventional initialization */
+}
+```
+
+Related "concepts":
+
+```cpp
+concept Out(typename T) {
+    auto initial_value() -> T;
+    auto successful_type() -> typename { return T*; }
+};
+
+concept OutErr(typename T) {
+    auto initial_value() -> T;
+};
+```
+
 * It's hard to unify `mu->destroy` and `free`: The former could contain the latter.
 
 Not planned:
