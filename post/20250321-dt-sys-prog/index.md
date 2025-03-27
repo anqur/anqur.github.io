@@ -106,6 +106,8 @@ auto m = Mutex(&) else (e) { /* ... */ };
 On-heap initialization:
 
 ```cpp
+auto m = malloc(Mutex) else (p, e) { /* ... */ };
+/* or */
 Mutex *m = malloc() else (p, e) { /* ... */ };
 ```
 
