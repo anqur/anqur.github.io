@@ -144,6 +144,7 @@ concept OutErr(typename T) {
 ```
 
 * It's hard to unify `mu->destroy` and `free`: The former could contain the latter.
+* Negative number literal should be acting correctly. `-` is not the negation operation.
 
 Not planned:
 
@@ -151,3 +152,5 @@ Not planned:
 * ~~Dart style syntax `..`, or Kotlin `with`, or Java's builder pattern.~~ RVO is not good for everywhere.
 
 Doing:
+
+* Correct `main` signature
