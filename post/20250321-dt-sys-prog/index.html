@@ -167,6 +167,13 @@ class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#
 <code>free</code>: The former could contain the latter.</li>
 <li>Negative number literal should be acting correctly. <code>-</code>
 is not the negation operation.</li>
+<li>Correct <code>main</code> signature:
+<ul>
+<li><code>main</code> should be given 0 or 2 parameters. Users could
+name the 2 parameters themselves.</li>
+<li>Return type of <code>main</code> is <em>auto</em>, it could be
+<code>void</code> or <code>int</code>.</li>
+</ul></li>
 </ul>
 <p>Not planned:</p>
 <ul>
@@ -176,9 +183,6 @@ oneliners.</del> No such situations needed.</li>
 or Java's builder pattern.</del> RVO is not good for everywhere.</li>
 </ul>
 <p>Doing:</p>
-<ul>
-<li>Correct <code>main</code> signature</li>
-</ul>
 
     </article>
 </main>

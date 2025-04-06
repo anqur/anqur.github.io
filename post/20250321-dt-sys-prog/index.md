@@ -145,6 +145,9 @@ concept OutErr(typename T) {
 
 * It's hard to unify `mu->destroy` and `free`: The former could contain the latter.
 * Negative number literal should be acting correctly. `-` is not the negation operation.
+* Correct `main` signature:
+    * `main` should be given 0 or 2 parameters. Users could name the 2 parameters themselves.
+    * Return type of `main` is *auto*, it could be `void` or `int`.
 
 Not planned:
 
@@ -152,5 +155,3 @@ Not planned:
 * ~~Dart style syntax `..`, or Kotlin `with`, or Java's builder pattern.~~ RVO is not good for everywhere.
 
 Doing:
-
-* Correct `main` signature
