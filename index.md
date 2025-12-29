@@ -7,7 +7,7 @@
 
 My [CV (Chinese)].
 
-[Anqur]: https://github.com/anqurvanillapy
+[Anqur]: https://github.com/anqur
 
 [CV (Chinese)]: post/cv
 
