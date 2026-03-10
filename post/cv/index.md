@@ -16,12 +16,12 @@
 
 |                |                  |
 |:---------------|-----------------:|
-| **苏州同元软控**（成都） | 编译器工程师 2025-04 ~ |
+| **苏州同元软控**（成都） | 编译器工程师 2025-04 ~ 现在 |
 
 > 科学计算 IDE | Rust、Julia 语言
 
 * 主导自研 Julia 静态分析器、渐进类型（gradual typing）系统等编译器组件开发（使用 Rust 从零编写），并推出相应 LSP 语言服务和
-  VS Code 插件，涵盖多项 Julia 官方插件 julia-vscode 欠缺的功能。
+  VS Code 插件，涵盖多项 Julia 官方插件 julia-vscode 无法实现的功能。
 * 主导公司科学计算工具箱函数库的语义工程（semantic engineering）专项，通过类 EBNF 语法定义生成 5000+ 个函数的索引数据，支持
   IDE 上的签名帮助（signature help）和枚举补全（completion）功能。
 * 维护开发 Julia 公司内部分支的 LanguageServer、StaticLint、JuliaFormatter 等核心语言服务功能。
