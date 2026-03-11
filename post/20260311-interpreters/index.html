@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1">
+
+    <title>Internal Blog Theory | Anqur</title>
+    <link rel="stylesheet" href="/style/post.css">
+    <link rel="stylesheet" href="/style/highlight.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css"
+          integrity="sha384-veTAhWILPOotXm+kbR5uY7dRamYLJf58I7P+hJhjeuc7hsMAkJHTsPahAl0hBST0" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.js"
+            integrity="sha384-v6mkHYHfY/4BWq54f7lQAdtIsoZZIByznQ3ZqN38OL4KCsrxo31SLlPiak7cj/Mg"
+            crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/contrib/auto-render.min.js"
+            integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+</head>
+
+<body>
+<header>
+    <h1><a href="/">Internal Blog Theory</a></h1>
+</header>
+
+<main>
+    <article>
+        <h1 id="十万个为什么之解释器">十万个为什么之解释器</h1>
+<p>在各种解析器框架（例如 bison/flex、<a
+href="https://docs.rs/chumsky/0.12.0/chumsky/trait.Parser.html#example-1">chumsky</a>
+等）的文档中，我们总能看到如何用其编写解释器（interpreter）的例子，那么这些最简单的例子是怎么一步一步进化成所谓的高性能
+VM（virtual machine）的呢？</p>
+<p>本文通过各种提问和关键概念，将一个最简单的解释器一步步演化成高性能 VM
+实现。本文的行文风格将高度抽象，不包含任何可执行的代码，仅包含每个阶段的思考过程。</p>
+<h2 id="语言定义">语言定义</h2>
+<p>假设有一款类似 Julia 的玩具语言
+<strong>Toy</strong>，大概长这个样子：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode julia"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">fib</span>(x<span class="op">::</span><span class="dt">Int</span>)<span class="op">::</span><span class="dt">Int</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> x <span class="op">&lt;=</span> <span class="fl">0</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="fl">1</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="fu">fib</span>(x <span class="op">-</span> <span class="fl">1</span>) <span class="op">+</span> <span class="fu">fib</span>(x <span class="op">-</span> <span class="fl">2</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<p>抽象语法树（AST）的结构定义为：</p>
+<pre class="ebnf"><code>program = { function* };
+function = { IDENT, param*, expr, block };
+param = { IDENT, expr };
+block = { expr* };
+stmt = { if
+       | return
+       | expr
+       };
+if = { expr, block, block };
+return = { expr? };
+expr = { call
+       | binary
+       | type
+       | IDENT
+       | INTEGER
+       };
+type = { &quot;Int&quot; };
+call = { expr, expr* };
+binary = { expr, OP, expr };</code></pre>
+<p>由于仅支持 <code>Int</code> 这一个类型，所以 Toy 的语义值（semantic
+value）暂且只有 <code>int64</code>
+的情况。即整个解释器的入口函数如下：</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode rs"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> run(code<span class="op">:</span> <span class="op">&amp;</span>Program) <span class="op">-&gt;</span> int64<span class="op">;</span></span></code></pre></div>
+<h2 id="树遍历tree-walking">树遍历（tree walking）</h2>
+<p>最简单的解释器实现无非就是直接遍历这棵 AST，但由于我们的例子
+<code>fib</code> 涉及到函数调用、局部变量、语句列表（statement
+list）、控制流（control flow，如 <code>if</code> 和
+<code>return</code>）等特性，这里我们需要注意几个关键点。</p>
+
+    </article>
+</main>
+
+<footer>
+    <p>
+        All posts follow the <code>cc-by-4.0</code> license. See <a href="//github.com/anqur/anqur.github.io/issues">issues</a>?
+    </p>
+</footer>
+</body>
+
+</html>

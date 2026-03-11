@@ -2,7 +2,7 @@
 
 My personal blog.
 
-## Dependency
+## Dependencies
 
 * Pandoc
 * Python
@@ -51,7 +51,7 @@ I got a legacy blog site that everything is totally based on JavaScript: fetchin
 fly, and `insertAdjacentHTMl`-ing for the win. But the dependency bot just can't stop yelling at me for those insecure
 JS modules, which I have no ideas how they actually fuel my site.
 
-I decided to use Pandoc, and some trivial Python scripts, to statically generate all the stuff.
+So I decided to use Pandoc, and some trivial Python scripts, to statically generate all the stuff.
 
 ## License
 
